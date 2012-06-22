@@ -184,7 +184,7 @@ function usernameapprovalhistory_activate()
 
 	include MYBB_ROOT."/inc/adminfunctions_templates.php";
 	find_replace_templatesets("member_profile", "#".preg_quote('{$online_status}')."#i", '{$online_status}{$username_changes}');
-	find_replace_templatesets("usercp_changename", "#".preg_quote('{$lang->new_username}</strong>')."#i", '{$lang->new_username}</strong>{$maxchanges}{$approvalnotice}');
+	find_replace_templatesets("usercp_changename", "#".preg_quote('{$lang->new_username}</strong>')."#i", '{$lang->new_username}</strong>{$maxchanges}{$approvalnotice}{$changesleft}');
 
 	change_admin_permission('user', 'name_approval');
 }
@@ -197,7 +197,7 @@ function usernameapprovalhistory_deactivate()
 
 	include MYBB_ROOT."/inc/adminfunctions_templates.php";
 	find_replace_templatesets("member_profile", "#".preg_quote('{$username_changes}')."#i", '', 0);
-	find_replace_templatesets("usercp_changename", "#".preg_quote('{$maxchanges}{$approvalnotice}')."#i", '', 0);
+	find_replace_templatesets("usercp_changename", "#".preg_quote('{$maxchanges}{$approvalnotice}{$changesleft}')."#i", '', 0);
 
 	change_admin_permission('user', 'name_approval', -1);
 }
@@ -344,7 +344,7 @@ function usernameapprovalhistory_profile()
 // Username change group limit and approval notice
 function usernameapprovalhistory_change_page()
 {
-	global $db, $mybb, $lang, $approvalnotice, $maxchanges;
+	global $db, $mybb, $lang, $approvalnotice, $maxchanges, $changesleft;
 	$lang->load("usernameapprovalhistory");
 
 	if(!$mybb->usergroup['maxusernamesdaylimit'])
@@ -364,18 +364,22 @@ function usernameapprovalhistory_change_page()
 			$lang->error_max_changes_day = $lang->sprintf($lang->error_max_changes_day, $mybb->usergroup['maxusernamesperiod'], $mybb->usergroup['maxusernamesdaylimit']);
 			error($lang->error_max_changes_day);
 		}
-	}
 
-	$query = $db->simple_select("usernamehistory", "hid", "uid='".intval($mybb->user['uid'])."' AND approval='1'");
-	$history = $db->fetch_array($query);
-
-	if($history['hid'])
-	{
-		error($lang->error_alreadyawaiting);
+		$num_left = $mybb->usergroup['maxusernamesperiod'] - $change_count;
+		$lang->num_changes_left = $lang->sprintf($lang->num_changes_left, $num_left);
+		$changesleft = "<br /><span class=\"smalltext\">{$lang->num_changes_left}</span>";
 	}
 
 	if($mybb->usergroup['usernameapproval'] == 1)
 	{
+		$query = $db->simple_select("usernamehistory", "hid", "uid='".intval($mybb->user['uid'])."' AND approval='1'");
+		$history = $db->fetch_array($query);
+
+		if($history['hid'])
+		{
+			error($lang->error_alreadyawaiting);
+		}
+
 		$approvalnotice = "<br /><span class=\"smalltext\">{$lang->approval_notice}</span>";
 	}
 	else
@@ -385,11 +389,6 @@ function usernameapprovalhistory_change_page()
 
 	if($mybb->usergroup['maxusernamesperiod'] > 0)
 	{
-		if(!$mybb->usergroup['maxusernamesdaylimit'])
-		{
-			$mybb->usergroup['maxusernamesdaylimit'] = 1;
-		}
-
 		if($mybb->usergroup['maxusernamesdaylimit'] == 1)
 		{
 			$lang->max_changes_message_day = $lang->sprintf($lang->max_changes_message_day, $mybb->usergroup['maxusernamesperiod']);
