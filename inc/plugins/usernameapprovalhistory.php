@@ -639,7 +639,7 @@ function usernameapprovalhistory_admin_adminlog($plugin_array)
   	global $lang;
 	$lang->load("user_name_approval");
 
-	if($plugin_array['logitem']['data'][0] == 'view')
+	if($plugin_array['logitem']['data'][0] == 'name_approval')
 	{
 		$plugin_array['lang_string'] = admin_log_user_name_approval;
 	}
