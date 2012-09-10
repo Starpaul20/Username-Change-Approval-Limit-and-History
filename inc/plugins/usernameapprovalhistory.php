@@ -49,7 +49,7 @@ function usernameapprovalhistory_info()
 		"website"			=> "http://galaxiesrealm.com/index.php",
 		"author"			=> "Starpaul20",
 		"authorsite"		=> "http://galaxiesrealm.com/index.php",
-		"version"			=> "1.0.1",
+		"version"			=> "1.1",
 		"guid"				=> "2679a5dd647e8a27dc1fc29d3f465089",
 		"compatibility"		=> "16*"
 	);
@@ -511,9 +511,14 @@ function usernameapprovalhistory_log()
 // Online activity
 function usernameapprovalhistory_online_activity($user_activity)
 {
-	global $user;
+	global $user, $uid_list, $parameters;
 	if(my_strpos($user['location'], "misc.php?action=usernamehistory") !== false)
 	{
+		if(is_numeric($parameters['uid']))
+		{
+			$uid_list[] = $parameters['uid'];
+		}
+
 		$user_activity['activity'] = "misc_usernamehistory";
 		$user_activity['uid'] = $parameters['uid'];
 	}
@@ -523,15 +528,19 @@ function usernameapprovalhistory_online_activity($user_activity)
 
 function usernameapprovalhistory_online_location($plugin_array)
 {
-    global $db, $mybb, $lang, $parameters;
+    global $lang, $parameters, $usernames;
 	$lang->load("usernameapprovalhistory");
-
-	$query = $db->simple_select("users", "uid, username", "uid='{$parameters['uid']}'");
-	$online = $db->fetch_array($query);
 
 	if($plugin_array['user_activity']['activity'] == "misc_usernamehistory")
 	{
-		$plugin_array['location_name'] = $lang->sprintf($lang->viewing_username_history, $online['uid'], $online['username']);
+		if($usernames[$parameters['uid']])
+		{
+			$plugin_array['location_name'] = $lang->sprintf($lang->viewing_username_history2, $plugin_array['user_activity']['uid'], $usernames[$parameters['uid']]);
+		}
+		else
+		{
+			$plugin_array['location_name'] = $lang->viewing_username_history;
+		}
 	}
 
 	return $plugin_array;
