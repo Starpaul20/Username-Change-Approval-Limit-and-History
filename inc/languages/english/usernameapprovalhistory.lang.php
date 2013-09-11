@@ -7,7 +7,7 @@
 $l['nav_profile'] = "Profile of {1}";
 $l['nav_usernamehistory'] = "Username History";
 $l['viewing_username_history'] = "Viewing Username History";
-$l['viewing_username_history2'] = "Viewing Username History of <a href=\"misc.php?action=usernamehistory&uid={1}\">{2}</a>";
+$l['viewing_username_history2'] = "Viewing Username History of <a href=\"misc.php?action=usernamehistory&amp;uid={1}\">{2}</a>";
 
 $l['username_history_for'] = "Username History for {1}";
 $l['old_username'] = "Old Username";
