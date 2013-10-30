@@ -48,11 +48,13 @@ if(!$mybb->input['action'])
 							"approval" => 0
 						);	
 						$db->update_query("usernamehistory", $approval, "hid='{$history['hid']}'");
+						update_usernameapproval();
 					}
 				}
 				else if($action == "delete")
 				{
 					$db->delete_query("usernamehistory", "hid='{$history['hid']}'");
+					update_usernameapproval();
 				}
 			}
 

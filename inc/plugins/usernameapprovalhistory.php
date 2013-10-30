@@ -34,6 +34,7 @@ if(my_strpos($_SERVER['PHP_SELF'], 'member.php'))
 // Tell MyBB when to run the hooks
 $plugins->add_hook("misc_start", "usernameapprovalhistory_run");
 $plugins->add_hook("member_profile_end", "usernameapprovalhistory_profile");
+$plugins->add_hook("global_start", "usernameapprovalhistory_notify");
 $plugins->add_hook("usercp_changename_start", "usernameapprovalhistory_change_page");
 $plugins->add_hook("usercp_do_changename_start", "usernameapprovalhistory_check");
 $plugins->add_hook("usercp_do_changename_end", "usernameapprovalhistory_log");
@@ -48,6 +49,7 @@ $plugins->add_hook("admin_user_groups_edit_commit", "usernameapprovalhistory_use
 $plugins->add_hook("admin_user_menu", "usernameapprovalhistory_admin_menu");
 $plugins->add_hook("admin_user_action_handler", "usernameapprovalhistory_admin_action_handler");
 $plugins->add_hook("admin_user_permissions", "usernameapprovalhistory_admin_permissions");
+$plugins->add_hook("admin_tools_cache_begin", "usernameapprovalhistory_datacache_class");
 $plugins->add_hook("admin_tools_get_admin_log_action", "usernameapprovalhistory_admin_adminlog");
 
 // The information that shows up on the plugin manager
@@ -59,7 +61,7 @@ function usernameapprovalhistory_info()
 		"website"			=> "http://galaxiesrealm.com/index.php",
 		"author"			=> "Starpaul20",
 		"authorsite"		=> "http://galaxiesrealm.com/index.php",
-		"version"			=> "1.1",
+		"version"			=> "1.2",
 		"guid"				=> "2679a5dd647e8a27dc1fc29d3f465089",
 		"compatibility"		=> "16*"
 	);
@@ -91,6 +93,7 @@ function usernameapprovalhistory_install()
 	$db->add_column("usergroups", "maxusernamesdaylimit", "int(3) NOT NULL default '30'");
 
 	$cache->update_usergroups();
+	update_usernameapproval();
 }
 
 // Checks to make sure plugin is installed
@@ -128,6 +131,7 @@ function usernameapprovalhistory_uninstall()
 		$db->drop_column("usergroups", "maxusernamesdaylimit");
 	}
 
+	$db->delete_query("datacache", "title='usernameapproval'");
 	$cache->update_usergroups();
 }
 
@@ -201,22 +205,36 @@ function usernameapprovalhistory_activate()
 	);
 	$db->insert_query("templates", $insert_array);
 
+	$insert_array = array(
+		'title'		=> 'global_usernameapproval',
+		'template'	=> $db->escape_string('<div class="red_alert"><a href="{$mybb->settings[\'bburl\']}/{$config[\'admin_dir\']}/index.php?module=user-name_approval">{$lang->unread_approval_counts}</a></div>
+<br />'),
+		'sid'		=> '-1',
+		'version'	=> '',
+		'dateline'	=> TIME_NOW
+	);
+	$db->insert_query("templates", $insert_array);
+
 	include MYBB_ROOT."/inc/adminfunctions_templates.php";
 	find_replace_templatesets("member_profile", "#".preg_quote('{$online_status}')."#i", '{$online_status}{$username_changes}');
 	find_replace_templatesets("usercp_changename", "#".preg_quote('{$lang->new_username}</strong>')."#i", '{$lang->new_username}</strong>{$maxchanges}{$approvalnotice}{$changesleft}');
+	find_replace_templatesets("header", "#".preg_quote('{$pm_notice}')."#i", '{$pm_notice}{$username_approval}');
 
 	change_admin_permission('user', 'name_approval');
+
+	update_usernameapproval();
 }
 
 // This function runs when the plugin is deactivated.
 function usernameapprovalhistory_deactivate()
 {
 	global $db;
-	$db->delete_query("templates", "title IN('misc_usernamehistory','misc_usernamehistory_no_history','misc_usernamehistory_history','member_profile_usernamechanges')");
+	$db->delete_query("templates", "title IN('misc_usernamehistory','misc_usernamehistory_no_history','misc_usernamehistory_history','member_profile_usernamechanges','global_usernameapproval')");
 
 	include MYBB_ROOT."/inc/adminfunctions_templates.php";
 	find_replace_templatesets("member_profile", "#".preg_quote('{$username_changes}')."#i", '', 0);
 	find_replace_templatesets("usercp_changename", "#".preg_quote('{$maxchanges}{$approvalnotice}{$changesleft}')."#i", '', 0);
+	find_replace_templatesets("header", "#".preg_quote('{$username_approval}')."#i", '', 0);
 
 	change_admin_permission('user', 'name_approval', -1);
 }
@@ -360,6 +378,35 @@ function usernameapprovalhistory_profile()
 	}
 }
 
+// Alerts Admins on username awaiting approval
+function usernameapprovalhistory_notify()
+{
+	global $mybb, $lang, $cache, $templates, $config, $username_approval;
+	$lang->load("usernameapprovalhistory");
+
+	$username_approval = '';
+	// This user is an administrator and admin links aren't hidden
+	if($mybb->usergroup['cancp'] == 1 && $mybb->config['hide_admin_links'] != 1)
+	{
+		// Read the username awaiting approval cache
+		$awaitingapproval = $cache->read("usernameapproval");
+
+		// 0 or more username change approvals currently exist
+		if($awaitingapproval['awaiting'] > 0)
+		{
+			if($awaitingapproval['awaiting'] == 1)
+			{
+				$lang->unread_approval_counts = $lang->unread_approval_count;
+			}
+			else
+			{
+				$lang->unread_approval_counts = $lang->sprintf($lang->unread_approval_counts, $awaitingapproval['awaiting']);
+			}
+			eval("\$username_approval = \"".$templates->get("global_usernameapproval")."\";");
+		}
+	}
+}
+
 // Username change group limit and approval notice
 function usernameapprovalhistory_change_page()
 {
@@ -500,6 +547,7 @@ function usernameapprovalhistory_check()
 					"newusername" => $db->escape_string($mybb->input['username'])
 				);
 				$db->insert_query("usernamehistory", $username_update);
+				update_usernameapproval();
 
 				redirect("usercp.php", $lang->redirect_namechangedapproval);
 			}
@@ -607,6 +655,7 @@ function usernameapprovalhistory_delete()
 {
 	global $db, $mybb, $user;
 	$db->delete_query("usernamehistory", "uid='{$user['uid']}'");
+	update_usernameapproval();
 }
 
 // Admin CP permission control
@@ -661,6 +710,40 @@ function usernameapprovalhistory_admin_permissions($admin_permissions)
 	return $admin_permissions;
 }
 
+// Rebuild username approval cache in Admin CP
+function usernameapprovalhistory_datacache_class()
+{
+	global $cache;
+
+	if(class_exists('MyDatacache'))
+	{
+		class UsernameDatacache extends MyDatacache
+		{
+			function update_usernameapproval()
+			{
+				update_usernameapproval();
+			}
+		}
+
+		$cache = null;
+		$cache = new UsernameDatacache;
+
+	}
+	else
+	{
+		class MyDatacache extends datacache
+		{
+			function update_usernameapproval()
+			{
+				update_usernameapproval();
+			}
+		}
+
+		$cache = null;
+		$cache = new MyDatacache;
+	}
+}
+
 // Admin Log display
 function usernameapprovalhistory_admin_adminlog($plugin_array)
 {
@@ -673,6 +756,28 @@ function usernameapprovalhistory_admin_adminlog($plugin_array)
 	}
 
 	return $plugin_array;
+}
+
+/**
+ * Update username awaiting approval cache.
+ *
+ */
+function update_usernameapproval()
+{
+	global $db, $cache;
+	$usernamehistory = array();
+	$query = $db->simple_select("usernamehistory", "COUNT(hid) AS approvalcount", "approval='1'");
+	$num = $db->fetch_array($query);
+
+	$query = $db->simple_select("usernamehistory", "dateline", "approval='1'", array('order_by' => 'dateline', 'order_dir' => 'DESC'));
+	$latest = $db->fetch_array($query);
+
+	$usernamehistory = array(
+		"awaiting" => $num['approvalcount'],
+		"lastdateline" => $latest['dateline']
+	);
+
+	$cache->update("usernameapproval", $usernamehistory);
 }
 
 ?>

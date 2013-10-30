@@ -26,4 +26,7 @@ $l['error_max_changes_day'] = "You cannot change your username because you've al
 $l['redirect_namechangedapproval'] = "Your name has successfully been changed. Please note that the Administrator requires new usernames to be approved before you can use it.<br />You will now be returned to the User CP.";
 $l['error_alreadyawaiting'] = "You already have a username change request waiting.";
 
+$l['unread_approval_count'] = "Administrator Notice: There is 1 username change awaiting approval.";
+$l['unread_approval_counts'] = "Administrator Notice: There are {1} username changes awaiting approval.";
+
 ?>
