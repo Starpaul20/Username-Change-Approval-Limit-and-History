@@ -1,0 +1,17 @@
+1.2
+- Added front end notice to Administrator of pending username changes awaiting approval
+- Added cache containing the number of changes awaiting approval
+- Moved hardcoded HTML string to template
+- Bug: fixed XHTML errors
+
+1.1
+- Added number of changes left on User CP Name Change page
+- Updated who's online function
+- Bug: Fixed bug with Admin Log function
+
+1.0.1
+- Bug: Fixed minor bug in profile display
+- Updated Admin CP logging when moderating username changes
+
+1.0
+- Initial release
