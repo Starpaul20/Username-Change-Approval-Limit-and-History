@@ -139,7 +139,24 @@ function usernameapprovalhistory_uninstall()
 function usernameapprovalhistory_activate()
 {
 	global $db;
+	$query = $db->simple_select("settinggroups", "gid", "name='member'");
+	$gid = intval($db->fetch_field($query, "gid"));
 
+	// Insert settings
+	$insertarray = array(
+		'name' => 'minusernametimewait',
+		'title' => 'Minimum Time Between Username Changes',
+		'description' => 'The minimum amount of time (in hours) after a username change a user must wait before being able to change it again. Admin changes do not count towards this limit. Enter 0 (zero) for no limit.',
+		'optionscode' => 'text',
+		'value' => 6,
+		'disporder' => 37,
+		'gid' => intval($gid)
+	);
+	$db->insert_query("settings", $insertarray);
+
+	rebuild_settings();
+
+	// Insert templates
 	$insert_array = array(
 		'title'		=> 'misc_usernamehistory',
 		'template'	=> $db->escape_string('<html>
@@ -229,7 +246,9 @@ function usernameapprovalhistory_activate()
 function usernameapprovalhistory_deactivate()
 {
 	global $db;
+	$db->delete_query("settings", "name IN('minusernametimewait')");
 	$db->delete_query("templates", "title IN('misc_usernamehistory','misc_usernamehistory_no_history','misc_usernamehistory_history','member_profile_usernamechanges','global_usernameapproval')");
+	rebuild_settings();
 
 	include MYBB_ROOT."/inc/adminfunctions_templates.php";
 	find_replace_templatesets("member_profile", "#".preg_quote('{$username_changes}')."#i", '', 0);
@@ -444,6 +463,21 @@ function usernameapprovalhistory_change_page()
 		$changesleft = "<br /><span class=\"smalltext\">{$lang->num_changes_left}</span>";
 	}
 
+	// Check minimum wait time
+	if($mybb->settings['minusernametimewait'] > 0)
+	{
+		$hours = intval($mybb->settings['minusernametimewait']);
+		$time = TIME_NOW - (60 * 60 * $hours);
+		$query = $db->simple_select("usernamehistory", "hid", "uid='".intval($mybb->user['uid'])."' AND adminchange !='1' AND dateline >= '".($time)."'");
+		$history = $db->fetch_array($query);
+
+		if($history['hid'])
+		{
+			$lang->error_minimum_wait_time = $lang->sprintf($lang->error_minimum_wait_time, $mybb->settings['minusernametimewait']);
+			error($lang->error_minimum_wait_time);
+		}
+	}
+
 	if($mybb->usergroup['usernameapproval'] == 1)
 	{
 		$query = $db->simple_select("usernamehistory", "hid", "uid='".intval($mybb->user['uid'])."' AND approval='1'");
@@ -515,6 +549,21 @@ function usernameapprovalhistory_check()
 				$lang->error_max_changes = $lang->sprintf($lang->error_max_changes, $mybb->usergroup['maxusernamesperiod'], $mybb->usergroup['maxusernamesdaylimit']);
 				error($lang->error_max_changes);
 			}
+		}
+	}
+
+	// Check minimum wait time
+	if($mybb->settings['minusernametimewait'] > 0)
+	{
+		$hours = intval($mybb->settings['minusernametimewait']);
+		$time = TIME_NOW - (60 * 60 * $hours);
+		$query = $db->simple_select("usernamehistory", "hid", "uid='".intval($mybb->user['uid'])."' AND adminchange !='1' AND dateline >= '".($time)."'");
+		$history = $db->fetch_array($query);
+
+		if($history['hid'])
+		{
+			$lang->error_minimum_wait_time = $lang->sprintf($lang->error_minimum_wait_time, $mybb->settings['minusernametimewait']);
+			error($lang->error_minimum_wait_time);
 		}
 	}
 
