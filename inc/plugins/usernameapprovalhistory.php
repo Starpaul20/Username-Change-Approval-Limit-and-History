@@ -413,22 +413,30 @@ function usernameapprovalhistory_change_page()
 	global $db, $mybb, $lang, $approvalnotice, $maxchanges, $changesleft;
 	$lang->load("usernameapprovalhistory");
 
-	if(!$mybb->usergroup['maxusernamesdaylimit'])
-	{
-		$mybb->usergroup['maxusernamesdaylimit'] = 1;
-	}
-
 	// Check group limits
 	if($mybb->usergroup['maxusernamesperiod'] > 0)
 	{
-		$days = intval($mybb->usergroup['maxusernamesdaylimit']);
-		$time = TIME_NOW - (60 * 60 * 24 * $days);
-		$query = $db->simple_select("usernamehistory", "COUNT(*) AS change_count", "uid='".intval($mybb->user['uid'])."' AND adminchange !='1' AND dateline >= '".($time)."'");
-		$change_count = $db->fetch_field($query, "change_count");
-		if($change_count >= $mybb->usergroup['maxusernamesperiod'])
+		if($mybb->usergroup['maxusernamesdaylimit'] > 0)
 		{
-			$lang->error_max_changes_day = $lang->sprintf($lang->error_max_changes_day, $mybb->usergroup['maxusernamesperiod'], $mybb->usergroup['maxusernamesdaylimit']);
-			error($lang->error_max_changes_day);
+			$days = intval($mybb->usergroup['maxusernamesdaylimit']);
+			$time = TIME_NOW - (60 * 60 * 24 * $days);
+			$query = $db->simple_select("usernamehistory", "COUNT(*) AS change_count", "uid='".intval($mybb->user['uid'])."' AND adminchange !='1' AND dateline >= '".($time)."'");
+			$change_count = $db->fetch_field($query, "change_count");
+			if($change_count >= $mybb->usergroup['maxusernamesperiod'])
+			{
+				$lang->error_max_changes_day = $lang->sprintf($lang->error_max_changes_day, $mybb->usergroup['maxusernamesperiod'], $mybb->usergroup['maxusernamesdaylimit']);
+				error($lang->error_max_changes_day);
+			}
+		}
+		else
+		{
+			$query = $db->simple_select("usernamehistory", "COUNT(*) AS change_count", "uid='".intval($mybb->user['uid'])."' AND adminchange !='1'");
+			$change_count = $db->fetch_field($query, "change_count");
+			if($change_count >= $mybb->usergroup['maxusernamesperiod'])
+			{
+				$lang->error_max_changes = $lang->sprintf($lang->error_max_changes, $mybb->usergroup['maxusernamesperiod'], $mybb->usergroup['maxusernamesdaylimit']);
+				error($lang->error_max_changes);
+			}
 		}
 
 		$num_left = $mybb->usergroup['maxusernamesperiod'] - $change_count;
@@ -455,7 +463,12 @@ function usernameapprovalhistory_change_page()
 
 	if($mybb->usergroup['maxusernamesperiod'] > 0)
 	{
-		if($mybb->usergroup['maxusernamesdaylimit'] == 1)
+		if(empty($mybb->usergroup['maxusernamesdaylimit']))
+		{
+			$lang->max_changes_message = $lang->sprintf($lang->max_changes_message, $mybb->usergroup['maxusernamesperiod']);
+			$maxchanges = "<br /><span class=\"smalltext\">{$lang->max_changes_message}</span>";
+		}
+		elseif($mybb->usergroup['maxusernamesdaylimit'] == 1)
 		{
 			$lang->max_changes_message_day = $lang->sprintf($lang->max_changes_message_day, $mybb->usergroup['maxusernamesperiod']);
 			$maxchanges = "<br /><span class=\"smalltext\">{$lang->max_changes_message_day}</span>";
@@ -478,22 +491,30 @@ function usernameapprovalhistory_check()
 	global $db, $mybb, $lang, $session;
 	$lang->load("usernameapprovalhistory");
 
-	if(!$mybb->usergroup['maxusernamesdaylimit'])
-	{
-		$mybb->usergroup['maxusernamesdaylimit'] = 1;
-	}
-
 	// Check group limits
 	if($mybb->usergroup['maxusernamesperiod'] > 0)
 	{
-		$days = intval($mybb->usergroup['maxusernamesdaylimit']);
-		$time = TIME_NOW - (60 * 60 * 24 * $days);
-		$query = $db->simple_select("usernamehistory", "COUNT(*) AS change_count", "uid='".intval($mybb->user['uid'])."' AND adminchange !='1' AND dateline >= '".($time)."'");
-		$change_count = $db->fetch_field($query, "change_count");
-		if($change_count >= $mybb->usergroup['maxusernamesperiod'])
+		if($mybb->usergroup['maxusernamesdaylimit'] > 0)
 		{
-			$lang->error_max_changes_day = $lang->sprintf($lang->error_max_changes_day, $mybb->usergroup['maxusernamesperiod'], $mybb->usergroup['maxusernamesdaylimit']);
-			error($lang->error_max_changes_day);
+			$days = intval($mybb->usergroup['maxusernamesdaylimit']);
+			$time = TIME_NOW - (60 * 60 * 24 * $days);
+			$query = $db->simple_select("usernamehistory", "COUNT(*) AS change_count", "uid='".intval($mybb->user['uid'])."' AND adminchange !='1' AND dateline >= '".($time)."'");
+			$change_count = $db->fetch_field($query, "change_count");
+			if($change_count >= $mybb->usergroup['maxusernamesperiod'])
+			{
+				$lang->error_max_changes_day = $lang->sprintf($lang->error_max_changes_day, $mybb->usergroup['maxusernamesperiod'], $mybb->usergroup['maxusernamesdaylimit']);
+				error($lang->error_max_changes_day);
+			}
+		}
+		else
+		{
+			$query = $db->simple_select("usernamehistory", "COUNT(*) AS change_count", "uid='".intval($mybb->user['uid'])."' AND adminchange !='1'");
+			$change_count = $db->fetch_field($query, "change_count");
+			if($change_count >= $mybb->usergroup['maxusernamesperiod'])
+			{
+				$lang->error_max_changes = $lang->sprintf($lang->error_max_changes, $mybb->usergroup['maxusernamesperiod'], $mybb->usergroup['maxusernamesdaylimit']);
+				error($lang->error_max_changes);
+			}
 		}
 	}
 

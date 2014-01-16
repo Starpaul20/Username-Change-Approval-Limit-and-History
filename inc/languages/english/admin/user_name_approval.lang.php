@@ -8,7 +8,7 @@
 $l['max_username_changes'] = "Maximum Username Changes Allowed Per X Day";
 $l['max_username_changes_desc'] = "Maximum number of times users in this group can change their username in the time period specified below. If empty, users can change their username an unlimited number of times. Admin CP changes does not count to this limit.";
 $l['username_changes_day_limit'] = "Username Change Time Period";
-$l['username_changes_day_limit_desc'] = "The number of days in which the number of username changes can be made. For example \"30\" would mean that the user could only change their username X amount of times in a 30 day period. If empty, the username time period will be 1 day.";
+$l['username_changes_day_limit_desc'] = "The number of days in which the number of username changes can be made. For example \"30\" would mean that the user could only change their username X amount of times in a 30 day period. If empty, no time period will be used and username change limit will become an all time limit.";
 $l['approve_username_changes'] = "Require username changes to be approved?";
 $l['name_approval'] = "Username Changes";
 $l['can_manage_name_approval'] = "Can manage username change approval?";
