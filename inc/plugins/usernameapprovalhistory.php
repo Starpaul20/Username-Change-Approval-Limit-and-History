@@ -31,6 +31,16 @@ if(my_strpos($_SERVER['PHP_SELF'], 'member.php'))
 	$templatelist .= 'member_profile_usernamechanges';
 }
 
+if(my_strpos($_SERVER['PHP_SELF'], 'usercp.php'))
+{
+	global $templatelist;
+	if(isset($templatelist))
+	{
+		$templatelist .= ',';
+	}
+	$templatelist .= 'usercp_changename_approvalnotice,usercp_changename_maxchanges,usercp_changename_changesleft';
+}
+
 // Tell MyBB when to run the hooks
 $plugins->add_hook("misc_start", "usernameapprovalhistory_run");
 $plugins->add_hook("member_profile_end", "usernameapprovalhistory_profile");
@@ -232,6 +242,33 @@ function usernameapprovalhistory_activate()
 	);
 	$db->insert_query("templates", $insert_array);
 
+	$insert_array = array(
+		'title'		=> 'usercp_changename_approvalnotice',
+		'template'	=> $db->escape_string('<br /><span class="smalltext">{$lang->approval_notice}</span>'),
+		'sid'		=> '-1',
+		'version'	=> '',
+		'dateline'	=> TIME_NOW
+	);
+	$db->insert_query("templates", $insert_array);
+
+	$insert_array = array(
+		'title'		=> 'usercp_changename_maxchanges',
+		'template'	=> $db->escape_string('<br /><span class="smalltext">{$max_changes_message}</span>'),
+		'sid'		=> '-1',
+		'version'	=> '',
+		'dateline'	=> TIME_NOW
+	);
+	$db->insert_query("templates", $insert_array);
+
+	$insert_array = array(
+		'title'		=> 'usercp_changename_changesleft',
+		'template'	=> $db->escape_string('<br /><span class="smalltext">{$lang->num_changes_left}</span>'),
+		'sid'		=> '-1',
+		'version'	=> '',
+		'dateline'	=> TIME_NOW
+	);
+	$db->insert_query("templates", $insert_array);
+
 	include MYBB_ROOT."/inc/adminfunctions_templates.php";
 	find_replace_templatesets("member_profile", "#".preg_quote('{$online_status}')."#i", '{$online_status}{$username_changes}');
 	find_replace_templatesets("usercp_changename", "#".preg_quote('{$lang->new_username}</strong>')."#i", '{$lang->new_username}</strong>{$maxchanges}{$approvalnotice}{$changesleft}');
@@ -247,7 +284,7 @@ function usernameapprovalhistory_deactivate()
 {
 	global $db;
 	$db->delete_query("settings", "name IN('minusernametimewait')");
-	$db->delete_query("templates", "title IN('misc_usernamehistory','misc_usernamehistory_no_history','misc_usernamehistory_history','member_profile_usernamechanges','global_usernameapproval')");
+	$db->delete_query("templates", "title IN('misc_usernamehistory','misc_usernamehistory_no_history','misc_usernamehistory_history','member_profile_usernamechanges','global_usernameapproval','usercp_changename_approvalnotice','usercp_changename_maxchanges','usercp_changename_changesleft')");
 	rebuild_settings();
 
 	include MYBB_ROOT."/inc/adminfunctions_templates.php";
@@ -429,10 +466,11 @@ function usernameapprovalhistory_notify()
 // Username change group limit and approval notice
 function usernameapprovalhistory_change_page()
 {
-	global $db, $mybb, $lang, $approvalnotice, $maxchanges, $changesleft;
+	global $db, $mybb, $lang, $templates, $approvalnotice, $maxchanges, $changesleft;
 	$lang->load("usernameapprovalhistory");
 
 	// Check group limits
+	$changesleft = "";
 	if($mybb->usergroup['maxusernamesperiod'] > 0)
 	{
 		if($mybb->usergroup['maxusernamesdaylimit'] > 0)
@@ -460,7 +498,8 @@ function usernameapprovalhistory_change_page()
 
 		$num_left = $mybb->usergroup['maxusernamesperiod'] - $change_count;
 		$lang->num_changes_left = $lang->sprintf($lang->num_changes_left, $num_left);
-		$changesleft = "<br /><span class=\"smalltext\">{$lang->num_changes_left}</span>";
+
+		eval("\$changesleft = \"".$templates->get("usercp_changename_changesleft")."\";");
 	}
 
 	// Check minimum wait time
@@ -478,6 +517,7 @@ function usernameapprovalhistory_change_page()
 		}
 	}
 
+	$approvalnotice = "";
 	if($mybb->usergroup['usernameapproval'] == 1)
 	{
 		$query = $db->simple_select("usernamehistory", "hid", "uid='".intval($mybb->user['uid'])."' AND approval='1'");
@@ -488,34 +528,26 @@ function usernameapprovalhistory_change_page()
 			error($lang->error_alreadyawaiting);
 		}
 
-		$approvalnotice = "<br /><span class=\"smalltext\">{$lang->approval_notice}</span>";
-	}
-	else
-	{
-		$approvalnotice = "";
+		eval("\$approvalnotice = \"".$templates->get("usercp_changename_approvalnotice")."\";");
 	}
 
+	$maxchanges = "";
 	if($mybb->usergroup['maxusernamesperiod'] > 0)
 	{
 		if(empty($mybb->usergroup['maxusernamesdaylimit']))
 		{
-			$lang->max_changes_message = $lang->sprintf($lang->max_changes_message, $mybb->usergroup['maxusernamesperiod']);
-			$maxchanges = "<br /><span class=\"smalltext\">{$lang->max_changes_message}</span>";
+			$max_changes_message = $lang->sprintf($lang->max_changes_message, $mybb->usergroup['maxusernamesperiod']);
 		}
 		elseif($mybb->usergroup['maxusernamesdaylimit'] == 1)
 		{
-			$lang->max_changes_message_day = $lang->sprintf($lang->max_changes_message_day, $mybb->usergroup['maxusernamesperiod']);
-			$maxchanges = "<br /><span class=\"smalltext\">{$lang->max_changes_message_day}</span>";
+			$max_changes_message = $lang->sprintf($lang->max_changes_message_day, $mybb->usergroup['maxusernamesperiod']);
 		}
 		else
 		{
-			$lang->max_changes_message_days = $lang->sprintf($lang->max_changes_message_days, $mybb->usergroup['maxusernamesperiod'], $mybb->usergroup['maxusernamesdaylimit']);
-			$maxchanges = "<br /><span class=\"smalltext\">{$lang->max_changes_message_days}</span>";
+			$max_changes_message = $lang->sprintf($lang->max_changes_message_days, $mybb->usergroup['maxusernamesperiod'], $mybb->usergroup['maxusernamesdaylimit']);
 		}
-	}
-	else
-	{
-		$maxchanges = "";
+
+		eval("\$maxchanges = \"".$templates->get("usercp_changename_maxchanges")."\";");
 	}
 }
 
