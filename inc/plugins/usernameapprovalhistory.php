@@ -262,7 +262,7 @@ function usernameapprovalhistory_activate()
 
 	$insert_array = array(
 		'title'		=> 'usercp_changename_changesleft',
-		'template'	=> $db->escape_string('<br /><span class="smalltext">{$lang->num_changes_left}</span>'),
+		'template'	=> $db->escape_string('<br /><span class="smalltext">{$num_changes_left}</span>'),
 		'sid'		=> '-1',
 		'version'	=> '',
 		'dateline'	=> TIME_NOW
@@ -497,7 +497,14 @@ function usernameapprovalhistory_change_page()
 		}
 
 		$num_left = $mybb->usergroup['maxusernamesperiod'] - $change_count;
-		$lang->num_changes_left = $lang->sprintf($lang->num_changes_left, $num_left);
+		if($num_left == 1)
+		{
+			$num_changes_left = $lang->num_change_left;
+		}
+		else
+		{
+			$num_changes_left = $lang->sprintf($lang->num_changes_left, $num_left);
+		}
 
 		eval("\$changesleft = \"".$templates->get("usercp_changename_changesleft")."\";");
 	}

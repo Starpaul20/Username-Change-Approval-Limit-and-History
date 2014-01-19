@@ -20,7 +20,8 @@ $l['approval_notice'] = "Please note your username change must be approved by an
 $l['max_changes_message_days'] = "You are allowed to change your username {1} times in a {2} day period.";
 $l['max_changes_message_day'] = "You are allowed to change your username {1} times per day.";
 $l['max_changes_message'] = "You are allowed to change your username {1} times.";
-$l['num_changes_left'] = "You have {1} changes left.";
+$l['num_changes_left'] = "You have <strong>{1}</strong> changes left.";
+$l['num_change_left'] = "You have <strong>1</strong> change left.";
 
 $l['invalid_user'] = "The specified user is invalid or does not exist.";
 $l['error_max_changes_day'] = "You cannot change your username because you've already used up your allocated quota of changing your name {1} times in the past {2} days.";
