@@ -19,6 +19,8 @@ $l['admin_log_user_name_approval'] = "Moderated username changes";
 // Username Approval page
 $l['username_approval'] = "Username Change Approval";
 $l['username_approval_desc'] = "Here you can view and approve username changes awaiting moderation.";
+$l['username_logs'] = "Username Change Logs";
+$l['username_logs_desc'] = "Here you can view all username change history.";
 
 $l['user'] = "User";
 $l['new_name'] = "New Username";
@@ -36,5 +38,24 @@ $l['approve'] = "Approve";
 $l['mark_as_ignored'] = "Mark all as ignored";
 $l['mark_as_deleted'] = "Mark all for deletion";
 $l['mark_as_approved'] = "Mark all as approved";
+
+$l['current_username'] = "Current Username";
+$l['old_username'] = "Old Username";
+$l['changed_to'] = "Changed To";
+$l['change_date'] = "Change Date";
+$l['admin_change'] = "Administrator Change";
+$l['no_username_history'] = "This is no username history to display.";
+$l['changed_by'] = "changed by";
+$l['yes'] = "Yes";
+$l['no'] = "No";
+
+$l['filter_username_history'] = "Filter Username History";
+$l['sort_by'] = "Sort By:";
+$l['in'] = "in";
+$l['order'] = "order";
+$l['asc'] = "Ascending";
+$l['desc'] = "Descending";
+$l['all_users'] = "All Users";
+$l['results_per_page'] = "Results Per Page:";
 
 ?>

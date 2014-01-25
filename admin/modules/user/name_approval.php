@@ -12,6 +12,200 @@ if(!defined("IN_MYBB"))
 
 $page->add_breadcrumb_item($lang->username_approval, "index.php?module=user-name_approval");
 
+$sub_tabs['name_approval'] = array(
+	'title' => $lang->username_approval,
+	'link' => "index.php?module=user-name_approval",
+	'description' => $lang->username_approval_desc
+);
+
+$sub_tabs['username_logs'] = array(
+	'title' => $lang->username_logs,
+	'link' => "index.php?module=user-name_approval&amp;action=logs",
+	'description' => $lang->username_logs_desc
+);
+
+if($mybb->input['action'] == "logs")
+{
+	$page->add_breadcrumb_item($lang->username_logs);
+	$page->output_header($lang->username_logs);
+
+	$page->output_nav_tabs($sub_tabs, 'username_logs');
+
+	$perpage = intval($mybb->input['perpage']);
+	if(!$perpage)
+	{
+		$perpage = intval($mybb->settings['threadsperpage']);
+	}
+
+	$where = 'WHERE 1=1';
+
+	// Searching for entries by a particular user
+	if($mybb->input['uid'])
+	{
+		$where .= " AND h.uid='".intval($mybb->input['uid'])."'";
+	}
+
+	// Order?
+	switch($mybb->input['sortby'])
+	{
+		case "username":
+			$sortby = "u.username";
+			break;
+		default:
+			$sortby = "h.dateline";
+	}
+	$order = $mybb->input['order'];
+	if($order != "asc")
+	{
+		$order = "desc";
+	}
+
+	$query = $db->query("
+		SELECT COUNT(h.dateline) AS count
+		FROM ".TABLE_PREFIX."usernamehistory h
+		LEFT JOIN ".TABLE_PREFIX."users u ON (u.uid=h.uid)
+		{$where}
+	");
+	$rescount = $db->fetch_field($query, "count");
+
+	// Figure out if we need to display multiple pages.
+	if($mybb->input['page'] != "last")
+	{
+		$pagecnt = intval($mybb->input['page']);
+	}
+
+	$postcount = intval($rescount);
+	$pages = $postcount / $perpage;
+	$pages = ceil($pages);
+
+	if($mybb->input['page'] == "last")
+	{
+		$pagecnt = $pages;
+	}
+
+	if($pagecnt > $pages)
+	{
+		$pagecnt = 1;
+	}
+
+	if($pagecnt)
+	{
+		$start = ($pagecnt-1) * $perpage;
+	}
+	else
+	{
+		$start = 0;
+		$pagecnt = 1;
+	}
+
+	$table = new Table;
+	$table->construct_header($lang->current_username, array('width' => '20%'));
+	$table->construct_header($lang->old_username, array("class" => "align_center", 'width' => '20%'));
+	$table->construct_header($lang->changed_to, array("class" => "align_center", 'width' => '20%'));
+	$table->construct_header($lang->change_date, array("class" => "align_center", 'width' => '15%'));
+	$table->construct_header($lang->ipaddress, array("class" => "align_center", 'width' => '10%'));
+	$table->construct_header($lang->admin_change, array("class" => "align_center", 'width' => '15%'));
+
+	$query = $db->query("
+		SELECT h.*, u.username AS current_username, u.usergroup, u.displaygroup
+		FROM ".TABLE_PREFIX."usernamehistory h
+		LEFT JOIN ".TABLE_PREFIX."users u ON (u.uid=h.uid)
+		{$where}
+		ORDER BY {$sortby} {$order}
+		LIMIT {$start}, {$perpage}
+	");
+	while($logitem = $db->fetch_array($query))
+	{
+		$adminchange = '';
+		$logitem['dateline'] = date("jS M Y, G:i", $logitem['dateline']);
+		$trow = alt_trow();
+		$username = format_name($logitem['current_username'], $logitem['usergroup'], $logitem['displaygroup']);
+		$logitem['profilelink'] = build_profile_link($username, $logitem['uid']);
+
+		$logitem['username'] = htmlspecialchars_uni($logitem['username']);
+		$logitem['newusername'] = htmlspecialchars_uni($logitem['newusername']);
+
+		if($logitem['adminchange'] == 1)
+		{
+			$data = unserialize($logitem['admindata']);
+			$logitem['adminlink'] = build_profile_link($data['username'], $data['uid']);
+			$adminchange = "<strong>{$lang->yes}</strong>, {$lang->changed_by} {$logitem['adminlink']}";
+		}
+		else
+		{
+			$adminchange = $lang->no;
+		}
+
+		$table->construct_cell($logitem['profilelink']);
+		$table->construct_cell($logitem['username'], array("class" => "align_center"));
+		$table->construct_cell($logitem['newusername'], array("class" => "align_center"));
+		$table->construct_cell($logitem['dateline'], array("class" => "align_center"));
+		$table->construct_cell($logitem['ipaddress'], array("class" => "align_center"));
+		$table->construct_cell($adminchange, array("class" => "align_center"));
+		$table->construct_row();
+	}
+
+	if($table->num_rows() == 0)
+	{
+		$table->construct_cell($lang->no_username_history, array("colspan" => "6"));
+		$table->construct_row();
+	}
+
+	$table->output($lang->username_logs);
+
+	// Do we need to construct the pagination?
+	if($rescount > $perpage)
+	{
+		echo draw_admin_pagination($pagecnt, $perpage, $rescount, "index.php?module=user-name_approval&amp;action=logs&amp;perpage=$perpage&amp;uid={$mybb->input['uid']}&amp;sortby={$mybb->input['sortby']}&amp;order={$order}")."<br />";
+	}
+
+	// Fetch filter options
+	$sortbysel[$mybb->input['sortby']] = "selected=\"selected\"";
+	$ordersel[$mybb->input['order']] = "selected=\"selected\"";
+
+	$user_options[''] = $lang->all_users;
+	$user_options['0'] = '----------';
+
+	$query = $db->query("
+		SELECT DISTINCT h.uid, u.username
+		FROM ".TABLE_PREFIX."usernamehistory h
+		LEFT JOIN ".TABLE_PREFIX."users u ON (h.uid=u.uid)
+		ORDER BY u.username ASC
+	");
+	while($user = $db->fetch_array($query))
+	{
+		$selected = '';
+		if($mybb->input['uid'] == $user['uid'])
+		{
+			$selected = "selected=\"selected\"";
+		}
+		$user_options[$user['uid']] = $user['username'];
+	}
+
+	$sort_by = array(
+		'dateline' => $lang->change_date,
+		'username' => $lang->current_username
+	);
+
+	$order_array = array(
+		'asc' => $lang->asc,
+		'desc' => $lang->desc
+	);
+
+	$form = new Form("index.php?module=user-name_approval&amp;action=logs", "post");
+	$form_container = new FormContainer($lang->filter_username_history);
+	$form_container->output_row($lang->current_username.":", "", $form->generate_select_box('uid', $user_options, $mybb->input['uid'], array('id' => 'uid')), 'uid');
+	$form_container->output_row($lang->sort_by, "", $form->generate_select_box('sortby', $sort_by, $mybb->input['sortby'], array('id' => 'sortby'))." {$lang->in} ".$form->generate_select_box('order', $order_array, $order, array('id' => 'order'))." {$lang->order}", 'order');
+	$form_container->output_row($lang->results_per_page, "", $form->generate_text_box('perpage', $perpage, array('id' => 'perpage')), 'perpage');
+
+	$form_container->end();
+	$buttons[] = $form->generate_submit_button($lang->filter_username_history);
+	$form->output_submit_wrapper($buttons);
+	$form->end();
+
+	$page->output_footer();
+}
+
 if(!$mybb->input['action'])
 {
 	if($mybb->request_method == "post")
@@ -76,12 +270,6 @@ if(!$mybb->input['action'])
 
 	$stylesheet = "<link rel=\"stylesheet\" href=\"styles/default/forum.css\" type=\"text/css\" />";
 	echo $stylesheet;
-
-	$sub_tabs['name_approval'] = array(
-		'title' => $lang->username_approval,
-		'link' => "index.php?module=user-name_approval",
-		'description' => $lang->username_approval_desc
-	);
 
 	$page->output_nav_tabs($sub_tabs, 'name_approval');
 
