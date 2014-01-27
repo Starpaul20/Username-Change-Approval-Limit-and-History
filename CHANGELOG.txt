@@ -1,3 +1,10 @@
+1.3
+- Updated username change limit
+- Added minimum wait between changes setting
+- Moved more hardcoded HTML to template
+- Updated grammar on number of changes left
+- Added full log of username changes in Admin CP
+
 1.2
 - Added front end notice to Administrator of pending username changes awaiting approval
 - Added cache containing the number of changes awaiting approval

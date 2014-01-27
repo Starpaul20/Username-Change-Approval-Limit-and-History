@@ -1,6 +1,6 @@
 ## INFORMATION ##
 
-Username Change Approval, Limit and History (1.2) for MyBB 1.6
+Username Change Approval, Limit and History (1.3) for MyBB 1.6
 Created by: Starpaul20
 Copyright: ©2012
 License: GPL
@@ -9,7 +9,7 @@ Allows you to moderate username changes (set as a usergroup permission), limit u
 
 The username history bit appears under Status near the top of a profile (it will only show if the user has any username history to show).
 
-The usergroup permission are located under the Account Management section of the 'Users and Permissions' tab when editing a usergroup. This plugin offers full language support.
+The usergroup permission are located under the 'Account Management' section of the 'Users and Permissions' tab when editing a usergroup. This plugin offers full language support.
 
 
 ## INSTALLATION ##

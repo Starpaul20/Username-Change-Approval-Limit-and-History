@@ -71,7 +71,7 @@ function usernameapprovalhistory_info()
 		"website"			=> "http://galaxiesrealm.com/index.php",
 		"author"			=> "Starpaul20",
 		"authorsite"		=> "http://galaxiesrealm.com/index.php",
-		"version"			=> "1.2",
+		"version"			=> "1.3",
 		"guid"				=> "2679a5dd647e8a27dc1fc29d3f465089",
 		"compatibility"		=> "16*"
 	);
