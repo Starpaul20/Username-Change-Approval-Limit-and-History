@@ -90,17 +90,17 @@ function usernameapprovalhistory_install()
 				hid int(10) unsigned NOT NULL auto_increment,
 				uid int(10) unsigned NOT NULL default '0',
 				username varchar(120) NOT NULL default '',
-				dateline bigint(30) NOT NULL default '0',
+				dateline int unsigned NOT NULL default '0',
 				ipaddress varbinary(16) NOT NULL default '',
-				approval int(1) NOT NULL default '0',
+				approval tinyint(1) NOT NULL default '0',
 				newusername varchar(120) NOT NULL default '',
-				adminchange int(1) NOT NULL default '0',
+				adminchange tinyint(1) NOT NULL default '0',
 				admindata text NOT NULL,
 				KEY uid (uid),
 				PRIMARY KEY(hid)
 			) ENGINE=MyISAM{$collation}");
 
-	$db->add_column("usergroups", "usernameapproval", "int(1) NOT NULL default '0'");
+	$db->add_column("usergroups", "usernameapproval", "tinyint(1) NOT NULL default '0'");
 	$db->add_column("usergroups", "maxusernamesperiod", "int(3) NOT NULL default '5'");
 	$db->add_column("usergroups", "maxusernamesdaylimit", "int(3) NOT NULL default '30'");
 
