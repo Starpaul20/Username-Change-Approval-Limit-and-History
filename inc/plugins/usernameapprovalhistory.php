@@ -91,7 +91,7 @@ function usernameapprovalhistory_install()
 				uid int(10) unsigned NOT NULL default '0',
 				username varchar(120) NOT NULL default '',
 				dateline bigint(30) NOT NULL default '0',
-				ipaddress varchar(30) NOT NULL default '',
+				ipaddress varbinary(16) NOT NULL default '',
 				approval int(1) NOT NULL default '0',
 				newusername varchar(120) NOT NULL default '',
 				adminchange int(1) NOT NULL default '0',
@@ -383,6 +383,7 @@ function usernameapprovalhistory_run()
 			// Display IP address and admin notation of username changes if user is a mod/admin
 			if($mybb->usergroup['cancp'] == 1 || $mybb->usergroup['issupermod'] == 1)
 			{
+				$history['ipaddress'] = my_inet_ntop($db->unescape_binary($history['ipaddress']));
 				$ipaddressbit = "<td class=\"{$alt_bg}\" align=\"center\">{$history['ipaddress']}</td>";
 
 				if($history['adminchange'] == 1)
@@ -565,6 +566,7 @@ function usernameapprovalhistory_check()
 {
 	global $db, $mybb, $lang, $session;
 	$lang->load("usernameapprovalhistory");
+	$mybb->binary_fields["usernamehistory"] = array('ipaddress' => true);
 
 	// Check group limits
 	if($mybb->usergroup['maxusernamesperiod'] > 0)
@@ -653,7 +655,7 @@ function usernameapprovalhistory_check()
 					"uid" => intval($mybb->user['uid']),
 					"username" => $db->escape_string($mybb->user['username']),
 					"dateline" => TIME_NOW,
-					"ipaddress" => $db->escape_string($session->ipaddress),
+					"ipaddress" => $db->escape_binary($session->packedip),
 					"approval" => 1,
 					"newusername" => $db->escape_string($mybb->input['username'])
 				);
@@ -675,12 +677,13 @@ function usernameapprovalhistory_check()
 function usernameapprovalhistory_log()
 {
 	global $db, $mybb, $session;
+	$mybb->binary_fields["usernamehistory"] = array('ipaddress' => true);
 
 	$username_update = array(
 		"uid" => intval($mybb->user['uid']),
 		"username" => $db->escape_string($mybb->user['username']),
 		"dateline" => TIME_NOW,
-		"ipaddress" => $db->escape_string($session->ipaddress),
+		"ipaddress" => $db->escape_binary($session->packedip),
 		"newusername" => $db->escape_string($mybb->input['username'])
 	);
 	$db->insert_query("usernamehistory", $username_update);
@@ -728,6 +731,7 @@ function usernameapprovalhistory_online_location($plugin_array)
 function usernameapprovalhistory_admin_log()
 {
 	global $db, $mybb, $user;
+	$mybb->binary_fields["usernamehistory"] = array('ipaddress' => true);
 
 	if($user['username'] != $mybb->input['username'])
 	{
@@ -741,7 +745,7 @@ function usernameapprovalhistory_admin_log()
 			"uid" => intval($user['uid']),
 			"username" => $db->escape_string($user['username']),
 			"dateline" => TIME_NOW,
-			"ipaddress" => $db->escape_string(get_ip()),
+			"ipaddress" => $db->escape_binary(my_inet_pton(get_ip())),
 			"newusername" => $db->escape_string($mybb->input['username']),
 			"adminchange" => 1,
 			"admindata" => $db->escape_string($admindata)

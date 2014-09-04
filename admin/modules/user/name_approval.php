@@ -140,7 +140,7 @@ if($mybb->input['action'] == "logs")
 		$table->construct_cell($logitem['username'], array("class" => "align_center"));
 		$table->construct_cell($logitem['newusername'], array("class" => "align_center"));
 		$table->construct_cell($logitem['dateline'], array("class" => "align_center"));
-		$table->construct_cell($logitem['ipaddress'], array("class" => "align_center"));
+		$table->construct_cell(my_inet_ntop($db->unescape_binary($logitem['ipaddress'])), array("class" => "align_center"));
 		$table->construct_cell($adminchange, array("class" => "align_center"));
 		$table->construct_row();
 	}
@@ -304,7 +304,7 @@ if(!$mybb->input['action'])
 		$table->construct_cell($username_history['profilelink']);
 		$table->construct_cell($username_history['newusername'], array("class" => "align_center"));
 		$table->construct_cell($username_history['dateline'], array("class" => "align_center"));
-		$table->construct_cell($username_history['ipaddress'], array("class" => "align_center"));
+		$table->construct_cell(my_inet_ntop($db->unescape_binary($username_history['ipaddress'])), array("class" => "align_center"));
 		$table->construct_cell($controls);
 		$table->construct_row();
 	}
