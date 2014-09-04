@@ -152,7 +152,7 @@ function usernameapprovalhistory_activate()
 {
 	global $db;
 	$query = $db->simple_select("settinggroups", "gid", "name='member'");
-	$gid = intval($db->fetch_field($query, "gid"));
+	$gid = $db->fetch_field($query, "gid");
 
 	// Insert settings
 	$insertarray = array(
@@ -162,7 +162,7 @@ function usernameapprovalhistory_activate()
 		'optionscode' => 'text',
 		'value' => 6,
 		'disporder' => 37,
-		'gid' => intval($gid)
+		'gid' => (int)$gid
 	);
 	$db->insert_query("settings", $insertarray);
 
@@ -310,7 +310,7 @@ function usernameapprovalhistory_run()
 			error_no_permission();
 		}
 
-		$uid = intval($mybb->input['uid']);
+		$uid = $mybb->get_input('uid', 1);
 		$user = get_user($uid);
 		if(!$user['uid'])
 		{
@@ -324,15 +324,15 @@ function usernameapprovalhistory_run()
 		add_breadcrumb($lang->nav_usernamehistory);
 
 		// Figure out if we need to display multiple pages.
-		if(!$mybb->settings['membersperpage'])
+		$perpage = $mybb->get_input('perpage', 1);
+		if(!$perpage)
 		{
-			$mybb->settings['membersperpage'] = 20;
-		}
+			if(!$mybb->settings['threadsperpage'] || (int)$mybb->settings['threadsperpage'] < 1)
+			{
+				$mybb->settings['threadsperpage'] = 20;
+			}
 
-		$perpage = intval($mybb->input['perpage']);
-		if(!$perpage || $perpage <= 0)
-		{
-			$perpage = intval($mybb->settings['membersperpage']);
+			$perpage = $mybb->settings['threadsperpage'];
 		}
 
 		$query = $db->simple_select("usernamehistory", "COUNT(hid) AS count", "uid='{$user['uid']}' AND approval='0'");
@@ -340,7 +340,7 @@ function usernameapprovalhistory_run()
 
 		if($mybb->input['page'] != "last")
 		{
-			$page = intval($mybb->input['page']);
+			$page = $mybb->get_input('page', 1);
 		}
 
 		$pages = $result / $perpage;
@@ -428,7 +428,7 @@ function usernameapprovalhistory_profile()
 	global $db, $mybb, $lang, $templates, $memprofile, $username_changes;
 	$lang->load("usernameapprovalhistory");
 
-	$query = $db->simple_select("usernamehistory", "COUNT(hid) AS num_changes", "uid='".intval($memprofile['uid'])."' AND approval='0'");
+	$query = $db->simple_select("usernamehistory", "COUNT(hid) AS num_changes", "uid='".(int)$memprofile['uid']."' AND approval='0'");
 	$num_changes = $db->fetch_field($query, "num_changes");
 
 	if($num_changes > 0)
@@ -478,9 +478,9 @@ function usernameapprovalhistory_change_page()
 	{
 		if($mybb->usergroup['maxusernamesdaylimit'] > 0)
 		{
-			$days = intval($mybb->usergroup['maxusernamesdaylimit']);
+			$days = (int)$mybb->usergroup['maxusernamesdaylimit'];
 			$time = TIME_NOW - (60 * 60 * 24 * $days);
-			$query = $db->simple_select("usernamehistory", "COUNT(*) AS change_count", "uid='".intval($mybb->user['uid'])."' AND adminchange !='1' AND dateline >= '".($time)."'");
+			$query = $db->simple_select("usernamehistory", "COUNT(*) AS change_count", "uid='".(int)$mybb->user['uid']."' AND adminchange !='1' AND dateline >= '".($time)."'");
 			$change_count = $db->fetch_field($query, "change_count");
 			if($change_count >= $mybb->usergroup['maxusernamesperiod'])
 			{
@@ -490,7 +490,7 @@ function usernameapprovalhistory_change_page()
 		}
 		else
 		{
-			$query = $db->simple_select("usernamehistory", "COUNT(*) AS change_count", "uid='".intval($mybb->user['uid'])."' AND adminchange !='1'");
+			$query = $db->simple_select("usernamehistory", "COUNT(*) AS change_count", "uid='".(int)$mybb->user['uid']."' AND adminchange !='1'");
 			$change_count = $db->fetch_field($query, "change_count");
 			if($change_count >= $mybb->usergroup['maxusernamesperiod'])
 			{
@@ -515,9 +515,9 @@ function usernameapprovalhistory_change_page()
 	// Check minimum wait time
 	if($mybb->settings['minusernametimewait'] > 0)
 	{
-		$hours = intval($mybb->settings['minusernametimewait']);
+		$hours = (int)$mybb->settings['minusernametimewait'];
 		$time = TIME_NOW - (60 * 60 * $hours);
-		$query = $db->simple_select("usernamehistory", "hid", "uid='".intval($mybb->user['uid'])."' AND adminchange !='1' AND dateline >= '".($time)."'");
+		$query = $db->simple_select("usernamehistory", "hid", "uid='".(int)$mybb->user['uid']."' AND adminchange !='1' AND dateline >= '".($time)."'");
 		$history = $db->fetch_array($query);
 
 		if($history['hid'])
@@ -530,7 +530,7 @@ function usernameapprovalhistory_change_page()
 	$approvalnotice = "";
 	if($mybb->usergroup['usernameapproval'] == 1)
 	{
-		$query = $db->simple_select("usernamehistory", "hid", "uid='".intval($mybb->user['uid'])."' AND approval='1'");
+		$query = $db->simple_select("usernamehistory", "hid", "uid='".(int)$mybb->user['uid']."' AND approval='1'");
 		$history = $db->fetch_array($query);
 
 		if($history['hid'])
@@ -573,9 +573,9 @@ function usernameapprovalhistory_check()
 	{
 		if($mybb->usergroup['maxusernamesdaylimit'] > 0)
 		{
-			$days = intval($mybb->usergroup['maxusernamesdaylimit']);
+			$days = (int)$mybb->usergroup['maxusernamesdaylimit'];
 			$time = TIME_NOW - (60 * 60 * 24 * $days);
-			$query = $db->simple_select("usernamehistory", "COUNT(*) AS change_count", "uid='".intval($mybb->user['uid'])."' AND adminchange !='1' AND dateline >= '".($time)."'");
+			$query = $db->simple_select("usernamehistory", "COUNT(*) AS change_count", "uid='".(int)$mybb->user['uid']."' AND adminchange !='1' AND dateline >= '".($time)."'");
 			$change_count = $db->fetch_field($query, "change_count");
 			if($change_count >= $mybb->usergroup['maxusernamesperiod'])
 			{
@@ -585,7 +585,7 @@ function usernameapprovalhistory_check()
 		}
 		else
 		{
-			$query = $db->simple_select("usernamehistory", "COUNT(*) AS change_count", "uid='".intval($mybb->user['uid'])."' AND adminchange !='1'");
+			$query = $db->simple_select("usernamehistory", "COUNT(*) AS change_count", "uid='".(int)$mybb->user['uid']."' AND adminchange !='1'");
 			$change_count = $db->fetch_field($query, "change_count");
 			if($change_count >= $mybb->usergroup['maxusernamesperiod'])
 			{
@@ -598,9 +598,9 @@ function usernameapprovalhistory_check()
 	// Check minimum wait time
 	if($mybb->settings['minusernametimewait'] > 0)
 	{
-		$hours = intval($mybb->settings['minusernametimewait']);
+		$hours = (int)$mybb->settings['minusernametimewait'];
 		$time = TIME_NOW - (60 * 60 * $hours);
-		$query = $db->simple_select("usernamehistory", "hid", "uid='".intval($mybb->user['uid'])."' AND adminchange !='1' AND dateline >= '".($time)."'");
+		$query = $db->simple_select("usernamehistory", "hid", "uid='".(int)$mybb->user['uid']."' AND adminchange !='1' AND dateline >= '".($time)."'");
 		$history = $db->fetch_array($query);
 
 		if($history['hid'])
@@ -610,7 +610,7 @@ function usernameapprovalhistory_check()
 		}
 	}
 
-	$query = $db->simple_select("usernamehistory", "hid", "uid='".intval($mybb->user['uid'])."' AND approval='1'");
+	$query = $db->simple_select("usernamehistory", "hid", "uid='".(int)$mybb->user['uid']."' AND approval='1'");
 	$history = $db->fetch_array($query);
 
 	if($history['hid'])
@@ -652,7 +652,7 @@ function usernameapprovalhistory_check()
 			else
 			{
 				$username_update = array(
-					"uid" => intval($mybb->user['uid']),
+					"uid" => (int)$mybb->user['uid'],
 					"username" => $db->escape_string($mybb->user['username']),
 					"dateline" => TIME_NOW,
 					"ipaddress" => $db->escape_binary($session->packedip),
@@ -680,7 +680,7 @@ function usernameapprovalhistory_log()
 	$mybb->binary_fields["usernamehistory"] = array('ipaddress' => true);
 
 	$username_update = array(
-		"uid" => intval($mybb->user['uid']),
+		"uid" => (int)$mybb->user['uid'],
 		"username" => $db->escape_string($mybb->user['username']),
 		"dateline" => TIME_NOW,
 		"ipaddress" => $db->escape_binary($session->packedip),
@@ -747,13 +747,13 @@ function usernameapprovalhistory_admin_log()
 	if($user['username'] != $mybb->input['username'])
 	{
 		$admin_info = array(
-			'uid' => intval($mybb->user['uid']),
+			'uid' => (int)$mybb->user['uid'],
 			'username' => $db->escape_string($mybb->user['username'])
 		);
 		$admindata = serialize($admin_info);
 
 		$username_update = array(
-			"uid" => intval($user['uid']),
+			"uid" => (int)$user['uid'],
 			"username" => $db->escape_string($user['username']),
 			"dateline" => TIME_NOW,
 			"ipaddress" => $db->escape_binary(my_inet_pton(get_ip())),
@@ -795,9 +795,9 @@ function usernameapprovalhistory_usergroup_permission($above)
 function usernameapprovalhistory_usergroup_permission_commit()
 {
 	global $mybb, $updated_group;
-	$updated_group['usernameapproval'] = intval($mybb->input['usernameapproval']);
-	$updated_group['maxusernamesperiod'] = intval($mybb->input['maxusernamesperiod']);
-	$updated_group['maxusernamesdaylimit'] = intval($mybb->input['maxusernamesdaylimit']);
+	$updated_group['usernameapproval'] = (int)$mybb->input['usernameapproval'];
+	$updated_group['maxusernamesperiod'] = (int)$mybb->input['maxusernamesperiod'];
+	$updated_group['maxusernamesdaylimit'] = (int)$mybb->input['maxusernamesdaylimit'];
 }
 
 // Admin CP log page
