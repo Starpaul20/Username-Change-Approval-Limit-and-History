@@ -65,9 +65,12 @@ $plugins->add_hook("admin_tools_get_admin_log_action", "usernameapprovalhistory_
 // The information that shows up on the plugin manager
 function usernameapprovalhistory_info()
 {
+	global $lang;
+	$lang->load("user_name_approval");
+
 	return array(
-		"name"				=> "Username Change Approval, Limit and History",
-		"description"		=> "Allows you to moderate username changes, limit username changes in a specific time period, and log all username changes.",
+		"name"				=> $lang->usernameapprovalhistory_info_name,
+		"description"		=> $lang->usernameapprovalhistory_info_desc,
 		"website"			=> "http://galaxiesrealm.com/index.php",
 		"author"			=> "Starpaul20",
 		"authorsite"		=> "http://galaxiesrealm.com/index.php",
