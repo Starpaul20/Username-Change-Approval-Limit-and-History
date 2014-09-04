@@ -50,10 +50,10 @@ $plugins->add_hook("usercp_do_changename_start", "usernameapprovalhistory_check"
 $plugins->add_hook("usercp_do_changename_end", "usernameapprovalhistory_log");
 $plugins->add_hook("fetch_wol_activity_end", "usernameapprovalhistory_online_activity");
 $plugins->add_hook("build_friendly_wol_location_end", "usernameapprovalhistory_online_location");
+$plugins->add_hook("datahandler_user_delete_content", "usernameapprovalhistory_delete");
 
 $plugins->add_hook("admin_user_users_edit_commit", "usernameapprovalhistory_admin_log");
 $plugins->add_hook("admin_user_users_merge_commit", "usernameapprovalhistory_merge");
-$plugins->add_hook("admin_user_users_delete_commit", "usernameapprovalhistory_delete");
 $plugins->add_hook("admin_formcontainer_output_row", "usernameapprovalhistory_usergroup_permission");
 $plugins->add_hook("admin_user_groups_edit_commit", "usernameapprovalhistory_usergroup_permission_commit");
 $plugins->add_hook("admin_user_menu", "usernameapprovalhistory_admin_menu");
@@ -727,6 +727,17 @@ function usernameapprovalhistory_online_location($plugin_array)
 	return $plugin_array;
 }
 
+// Delete username history if user is deleted
+function usernameapprovalhistory_delete($delete)
+{
+	global $db;
+
+	$db->delete_query('usernamehistory', 'uid IN('.$delete->delete_uids.')');
+	update_usernameapproval();
+
+	return $delete;
+}
+
 // Log old user's username (from Admin CP)
 function usernameapprovalhistory_admin_log()
 {
@@ -763,14 +774,6 @@ function usernameapprovalhistory_merge()
 		"uid" => $destination_user['uid']
 	);
 	$db->update_query("usernamehistory", $uid, "uid='{$source_user['uid']}'");
-}
-
-// Delete username history if user is deleted
-function usernameapprovalhistory_delete()
-{
-	global $db, $mybb, $user;
-	$db->delete_query("usernamehistory", "uid='{$user['uid']}'");
-	update_usernameapproval();
 }
 
 // Admin CP permission control
