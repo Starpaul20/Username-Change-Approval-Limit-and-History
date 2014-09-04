@@ -117,7 +117,7 @@ if($mybb->input['action'] == "logs")
 	while($logitem = $db->fetch_array($query))
 	{
 		$adminchange = '';
-		$logitem['dateline'] = date("jS M Y, G:i", $logitem['dateline']);
+		$logitem['dateline'] = my_date('relative', $logitem['dateline']);
 		$trow = alt_trow();
 		$username = format_name($logitem['current_username'], $logitem['usergroup'], $logitem['displaygroup']);
 		$logitem['profilelink'] = build_profile_link($username, $logitem['uid']);
@@ -291,7 +291,7 @@ if(!$mybb->input['action'])
 	$query = $db->simple_select("usernamehistory", "*", "approval='1'");
 	while($username_history = $db->fetch_array($query))
 	{
-		$username_history['dateline'] = date("jS M Y, G:i", $username_history['dateline']);
+		$username_history['dateline'] = my_date('relative', $username_history['dateline']);
 		$trow = alt_trow();
 		$username_history['profilelink'] = build_profile_link($username_history['username'], $username_history['uid'], "_blank");
 

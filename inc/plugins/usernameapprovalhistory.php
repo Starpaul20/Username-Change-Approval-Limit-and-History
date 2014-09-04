@@ -378,7 +378,7 @@ function usernameapprovalhistory_run()
 		while($history = $db->fetch_array($query))
 		{
 			$alt_bg = alt_trow();
-			$dateline = my_date($mybb->settings['dateformat'], $history['dateline']).", ".my_date($mybb->settings['timeformat'], $history['dateline']);
+			$dateline = my_date('relative', $history['dateline']);
 
 			// Display IP address and admin notation of username changes if user is a mod/admin
 			if($mybb->usergroup['cancp'] == 1 || $mybb->usergroup['issupermod'] == 1)
