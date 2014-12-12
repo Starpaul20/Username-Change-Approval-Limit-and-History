@@ -44,7 +44,8 @@ if(my_strpos($_SERVER['PHP_SELF'], 'usercp.php'))
 // Tell MyBB when to run the hooks
 $plugins->add_hook("misc_start", "usernameapprovalhistory_run");
 $plugins->add_hook("member_profile_end", "usernameapprovalhistory_profile");
-$plugins->add_hook("global_start", "usernameapprovalhistory_notify");
+$plugins->add_hook("global_start", "usernameapprovalhistory_notify_cache");
+$plugins->add_hook("global_intermediate", "usernameapprovalhistory_notify");
 $plugins->add_hook("usercp_changename_start", "usernameapprovalhistory_change_page");
 $plugins->add_hook("usercp_do_changename_start", "usernameapprovalhistory_check");
 $plugins->add_hook("usercp_do_changename_end", "usernameapprovalhistory_log");
@@ -235,8 +236,7 @@ function usernameapprovalhistory_activate()
 
 	$insert_array = array(
 		'title'		=> 'global_usernameapproval',
-		'template'	=> $db->escape_string('<div class="red_alert"><a href="{$mybb->settings[\'bburl\']}/{$config[\'admin_dir\']}/index.php?module=user-name_approval">{$lang->unread_approval_counts}</a></div>
-<br />'),
+		'template'	=> $db->escape_string('<div class="red_alert"><a href="{$mybb->settings[\'bburl\']}/{$config[\'admin_dir\']}/index.php?module=user-name_approval">{$lang->unread_approval_counts}</a></div>'),
 		'sid'		=> '-1',
 		'version'	=> '',
 		'dateline'	=> TIME_NOW
@@ -434,6 +434,17 @@ function usernameapprovalhistory_profile()
 	{
 		eval("\$username_changes = \"".$templates->get("member_profile_usernamechanges")."\";");
 	}
+}
+
+// Cache the notify template
+function usernameapprovalhistory_notify_cache()
+{
+	global $templatelist;
+	if(isset($templatelist))
+	{
+		$templatelist .= ',';
+	}
+	$templatelist .= 'global_usernameapproval';
 }
 
 // Alerts Admins on username awaiting approval
