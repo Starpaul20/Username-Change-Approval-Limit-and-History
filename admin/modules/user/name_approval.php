@@ -24,6 +24,76 @@ $sub_tabs['username_logs'] = array(
 	'description' => $lang->username_logs_desc
 );
 
+$sub_tabs['prune_username_logs'] = array(
+	'title' => $lang->prune_username_logs,
+	'link' => "index.php?module=user-name_approval&amp;action=prune",
+	'description' => $lang->prune_username_logs_desc
+);
+
+if($mybb->input['action'] == 'prune')
+{
+	if($mybb->request_method == 'post')
+	{
+		$where = 'dateline < '.(TIME_NOW-((int)$mybb->input['older_than']*86400));
+
+		// Searching for entries by a particular user
+		if($mybb->input['uid'])
+		{
+			$where .= " AND uid='".$mybb->get_input('uid', 1)."'";
+		}
+
+		// Only prune approved changes
+		$where .= " AND approval='0'";
+
+		$db->delete_query("usernamehistory", $where);
+		$num_deleted = $db->affected_rows();
+
+		// Log admin action
+		log_admin_action($mybb->input['older_than'], $mybb->input['uid'], $num_deleted);
+
+		flash_message($lang->success_pruned_username_logs, 'success');
+		admin_redirect("index.php?module=user-name_approval");
+	}
+
+	$page->add_breadcrumb_item($lang->prune_username_logs, "index.php?module=user-name_approval&amp;action=prune");
+	$page->output_header($lang->prune_username_logs);
+	$page->output_nav_tabs($sub_tabs, 'prune_username_logs');
+
+	// Fetch filter options
+	$sortbysel[$mybb->input['sortby']] = 'selected="selected"';
+	$ordersel[$mybb->input['order']] = 'selected="selected"';
+
+	$user_options[''] = $lang->all_users;
+	$user_options['0'] = '----------';
+
+	$query = $db->query("
+		SELECT DISTINCT h.uid, u.username
+		FROM ".TABLE_PREFIX."usernamehistory h
+		LEFT JOIN ".TABLE_PREFIX."users u ON (h.uid=u.uid)
+		ORDER BY u.username ASC
+	");
+	while($user = $db->fetch_array($query))
+	{
+		$user_options[$user['uid']] = $user['username'];
+	}
+
+	$form = new Form("index.php?module=user-name_approval&amp;action=prune", "post");
+	$form_container = new FormContainer($lang->prune_username_logs);
+	$form_container->output_row($lang->username, "", $form->generate_select_box('uid', $user_options, $mybb->input['uid'], array('id' => 'uid')), 'uid');
+
+	if(!$mybb->input['older_than'])
+	{
+		$mybb->input['older_than'] = '60';
+	}
+	$form_container->output_row($lang->date_range, "", $lang->older_than.$form->generate_text_box('older_than', $mybb->input['older_than'], array('id' => 'older_than', 'style' => 'width: 30px')).' '.$lang->days, 'older_than');
+	$form_container->end();
+	$buttons[] = $form->generate_submit_button($lang->prune_username_logs);
+	$form->output_submit_wrapper($buttons);
+	$form->end();
+
+	$page->output_footer();
+}
+
 if($mybb->input['action'] == "logs")
 {
 	$page->add_breadcrumb_item($lang->username_logs);

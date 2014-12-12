@@ -18,12 +18,16 @@ $l['can_manage_name_approval'] = "Can manage username change approval?";
 
 // Admin Log
 $l['admin_log_user_name_approval'] = "Moderated username changes";
+$l['admin_log_user_name_approval_prune'] = "Pruned {3} username change logs older than {1} days";
+$l['admin_log_user_name_approval_prune_user'] = "Pruned {3} username change logs older than {1} days for user #{2}";
 
 // Username Approval page
 $l['username_approval'] = "Username Change Approval";
 $l['username_approval_desc'] = "Here you can view and approve username changes awaiting moderation.";
 $l['username_logs'] = "Username Change Logs";
 $l['username_logs_desc'] = "Here you can view all username change history.";
+$l['prune_username_logs'] = "Prune Username Logs";
+$l['prune_username_logs_desc'] = "Here you can prune username change logs matching a specified criteria.";
 
 $l['user'] = "User";
 $l['new_name'] = "New Username";
@@ -32,8 +36,15 @@ $l['ipaddress'] = "IP Address";
 $l['options'] = "Options";
 $l['perform_actions'] = "Perform Actions";
 
+$l['all_users'] = "All Users";
+$l['username'] = "Username:";
+$l['date_range'] = "Date range:";
+$l['older_than'] = "Older than ";
+$l['days'] = "days";
+
 $l['success_name_approval'] = "The selected username changes have been moderated successfully.";
 $l['no_nameapproval'] = "There are no username change requests awaiting approval.";
+$l['success_pruned_username_logs'] = "The username change logs have been pruned successfully.";
 
 $l['ignore'] = "Ignore";
 $l['delete'] = "Delete";
