@@ -336,9 +336,9 @@ if(!$mybb->input['action'])
 	}
 
 	$all_options = "<ul class=\"modqueue_mass\">\n";
-	$all_options .= "<li><a href=\"#\" class=\"mass_ignore\" onclick=\"$$('input.radio_ignore').each(function(e) { e.checked = true; }); return false;\">{$lang->mark_as_ignored}</a></li>\n";
-	$all_options .= "<li><a href=\"#\" class=\"mass_delete\" onclick=\"$$('input.radio_delete').each(function(e) { e.checked = true; }); return false;\">{$lang->mark_as_deleted}</a></li>\n";
-	$all_options .= "<li><a href=\"#\" class=\"mass_approve\" onclick=\"$$('input.radio_approve').each(function(e) { e.checked = true; }); return false;\">{$lang->mark_as_approved}</a></li>\n";
+	$all_options .= "<li><a href=\"#\" class=\"mass_ignore\">{$lang->mark_as_ignored}</a></li>\n";
+	$all_options .= "<li><a href=\"#\" class=\"mass_delete\">{$lang->mark_as_deleted}</a></li>\n";
+	$all_options .= "<li><a href=\"#\" class=\"mass_approve\">{$lang->mark_as_approved}</a></li>\n";
 	$all_options .= "</ul>\n";
 
 	$page->output_header($lang->username_approval);
@@ -396,6 +396,27 @@ if(!$mybb->input['action'])
 	$buttons[] = $form->generate_submit_button($lang->perform_actions);
 	$form->output_submit_wrapper($buttons);
 	$form->end();
+
+	echo '<script type="text/javascript">
+		$(".mass_ignore").on("click", function () {
+			$("input.radio_ignore").each(function(e) {
+				$(this).prop("checked", true);
+			});
+			return false;
+		});
+		$(".mass_delete").on("click", function () {
+			$("input.radio_delete").each(function(e) {
+				$(this).prop("checked", true);
+			});
+			return false;
+		});
+		$(".mass_approve").on("click", function () {
+			$("input.radio_approve").each(function(e) {
+				$(this).prop("checked", true);
+			});
+			return false;
+		});
+	</script>';
 
 	$page->output_footer();
 }
