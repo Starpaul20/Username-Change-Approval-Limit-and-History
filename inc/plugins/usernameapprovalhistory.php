@@ -662,7 +662,7 @@ function usernameapprovalhistory_check()
 				$db->insert_query("usernamehistory", $username_update);
 				update_usernameapproval();
 
-				redirect("usercp.php", $lang->redirect_namechangedapproval);
+				redirect("usercp.php", $lang->redirect_namechangedapproval, "", true);
 			}
 		}
 		if(count($errors) > 0)
