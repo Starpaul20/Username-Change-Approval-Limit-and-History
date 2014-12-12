@@ -53,6 +53,7 @@ $plugins->add_hook("fetch_wol_activity_end", "usernameapprovalhistory_online_act
 $plugins->add_hook("build_friendly_wol_location_end", "usernameapprovalhistory_online_location");
 $plugins->add_hook("datahandler_user_delete_content", "usernameapprovalhistory_delete");
 
+$plugins->add_hook("admin_home_index_output_message", "usernameapprovalhistory_admin_notice");
 $plugins->add_hook("admin_user_users_edit_commit", "usernameapprovalhistory_admin_log");
 $plugins->add_hook("admin_user_users_merge_commit", "usernameapprovalhistory_merge");
 $plugins->add_hook("admin_formcontainer_output_row", "usernameapprovalhistory_usergroup_permission");
@@ -746,6 +747,30 @@ function usernameapprovalhistory_delete($delete)
 	update_usernameapproval();
 
 	return $delete;
+}
+
+// Alerts Admins in the Admin CP of username awaiting approval
+function usernameapprovalhistory_admin_notice()
+{
+	global $db, $lang, $page;
+	$lang->load("user_name_approval");
+
+	$query = $db->simple_select("usernamehistory", "COUNT(hid) AS awaitingapproval", "approval='1'");
+	$awaitingapproval = my_number_format($db->fetch_field($query, "awaitingapproval"));
+
+	if($awaitingapproval > 0)
+	{
+		if($awaitingapproval > 1)
+		{
+			$approval_count = $lang->sprintf($lang->unread_approval_counts, $awaitingapproval);
+		}
+		else
+		{
+			$approval_count = $lang->unread_approval_count;
+		}
+
+		$page->output_error("<p><a href=\"index.php?module=user-name_approval\">{$approval_count}</a></p>");
+	}
 }
 
 // Log old user's username (from Admin CP)

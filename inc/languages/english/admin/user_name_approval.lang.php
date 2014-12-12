@@ -7,6 +7,10 @@
 $l['usernameapprovalhistory_info_name'] = "Username Change Approval, Limit and History";
 $l['usernameapprovalhistory_info_desc'] = "Allows you to moderate username changes, limit username changes in a specific time period, and log all username changes.";
 
+// Admin Notice
+$l['unread_approval_count'] = "There is 1 username change awaiting approval.";
+$l['unread_approval_counts'] = "There are {1} username changes awaiting approval.";
+
 // Usergroup permissions
 $l['max_username_changes'] = "Maximum Username Changes Allowed Per X Day";
 $l['max_username_changes_desc'] = "Maximum number of times users in this group can change their username in the time period specified below. If empty, users can change their username an unlimited number of times. Admin CP changes does not count to this limit.";
