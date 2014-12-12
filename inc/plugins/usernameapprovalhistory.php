@@ -59,7 +59,6 @@ $plugins->add_hook("admin_user_groups_edit_commit", "usernameapprovalhistory_use
 $plugins->add_hook("admin_user_menu", "usernameapprovalhistory_admin_menu");
 $plugins->add_hook("admin_user_action_handler", "usernameapprovalhistory_admin_action_handler");
 $plugins->add_hook("admin_user_permissions", "usernameapprovalhistory_admin_permissions");
-$plugins->add_hook("admin_tools_cache_begin", "usernameapprovalhistory_datacache_class");
 $plugins->add_hook("admin_tools_get_admin_log_action", "usernameapprovalhistory_admin_adminlog");
 
 // The information that shows up on the plugin manager
@@ -826,40 +825,6 @@ function usernameapprovalhistory_admin_permissions($admin_permissions)
 	$admin_permissions['name_approval'] = $lang->can_manage_name_approval;
 
 	return $admin_permissions;
-}
-
-// Rebuild username approval cache in Admin CP
-function usernameapprovalhistory_datacache_class()
-{
-	global $cache;
-
-	if(class_exists('MyDatacache'))
-	{
-		class UsernameDatacache extends MyDatacache
-		{
-			function update_usernameapproval()
-			{
-				update_usernameapproval();
-			}
-		}
-
-		$cache = null;
-		$cache = new UsernameDatacache;
-
-	}
-	else
-	{
-		class MyDatacache extends datacache
-		{
-			function update_usernameapproval()
-			{
-				update_usernameapproval();
-			}
-		}
-
-		$cache = null;
-		$cache = new MyDatacache;
-	}
 }
 
 // Admin Log display
