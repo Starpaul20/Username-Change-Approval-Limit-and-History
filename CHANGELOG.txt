@@ -1,3 +1,11 @@
+1.1 (December 12th, 2014)
+- Added ability to prune username change history (Issue #2)
+- Added Admin CP notice of pending username changes awaiting approval (Issue #3)
+- Cached and updated front end notice template (Issue #3)
+- Converted javascript
+- Updated old cache function
+- Bug: Forced redirect page after changing username if change needs approval (Issue #1)
+
 1.0 (September 4th, 2014)
 - Updated plugin to work with MyBB 1.8
 
