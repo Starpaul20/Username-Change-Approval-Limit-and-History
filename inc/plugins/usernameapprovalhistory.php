@@ -208,7 +208,7 @@ function usernameapprovalhistory_activate()
 		'name' => 'minusernametimewait',
 		'title' => 'Minimum Time Between Username Changes',
 		'description' => 'The minimum amount of time (in hours) after a username change a user must wait before being able to change it again. Admin changes do not count towards this limit. Enter 0 (zero) for no limit.',
-		'optionscode' => 'text',
+		'optionscode' => 'numeric',
 		'value' => 6,
 		'disporder' => 37,
 		'gid' => (int)$gid
@@ -868,8 +868,8 @@ function usernameapprovalhistory_usergroup_permission($above)
 	if($above['title'] == $lang->account_management && $lang->account_management)
 	{
 		$above['content'] .="<div class=\"group_settings_bit\">".$form->generate_check_box('usernameapproval', 1, $lang->approve_username_changes, array("checked" => $mybb->input['usernameapproval']))."</div>";
-		$above['content'] .= "<div class=\"group_settings_bit\">{$lang->max_username_changes}:<br /><small>{$lang->max_username_changes_desc}</small><br />".$form->generate_text_box('maxusernamesperiod', $mybb->input['maxusernamesperiod'], array('id' => 'maxusernamesperiod', 'class' => 'field50'))."</div>";
-		$above['content'] .= "<div class=\"group_settings_bit\">{$lang->username_changes_day_limit}:<br /><small>{$lang->username_changes_day_limit_desc}</small><br />".$form->generate_text_box('maxusernamesdaylimit', $mybb->input['maxusernamesdaylimit'], array('id' => 'maxusernamesdaylimit', 'class' => 'field50'))."</div>";
+		$above['content'] .= "<div class=\"group_settings_bit\">{$lang->max_username_changes}:<br /><small>{$lang->max_username_changes_desc}</small><br />".$form->generate_numeric_field('maxusernamesperiod', $mybb->input['maxusernamesperiod'], array('id' => 'maxusernamesperiod', 'class' => 'field50', 'min' => 0))."</div>";
+		$above['content'] .= "<div class=\"group_settings_bit\">{$lang->username_changes_day_limit}:<br /><small>{$lang->username_changes_day_limit_desc}</small><br />".$form->generate_numeric_field('maxusernamesdaylimit', $mybb->input['maxusernamesdaylimit'], array('id' => 'maxusernamesdaylimit', 'class' => 'field50', 'min' => 0))."</div>";
 	}
 
 	return $above;
