@@ -192,8 +192,9 @@ function usernameapprovalhistory_uninstall()
 		$db->drop_column("usergroups", "maxusernamesdaylimit");
 	}
 
-	$db->delete_query("datacache", "title='usernameapproval'");
 	$cache->update_usergroups();
+
+	$cache->delete('usernameapproval');
 }
 
 // This function runs when the plugin is activated.
