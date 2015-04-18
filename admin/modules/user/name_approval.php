@@ -34,12 +34,12 @@ if($mybb->input['action'] == 'prune')
 {
 	if($mybb->request_method == 'post')
 	{
-		$where = 'dateline < '.(TIME_NOW-((int)$mybb->input['older_than']*86400));
+		$where = 'dateline < '.(TIME_NOW-($mybb->get_input('older_than', MyBB::INPUT_INT)*86400));
 
 		// Searching for entries by a particular user
 		if($mybb->input['uid'])
 		{
-			$where .= " AND uid='".$mybb->get_input('uid', 1)."'";
+			$where .= " AND uid='".$mybb->get_input('uid', MyBB::INPUT_INT)."'";
 		}
 
 		// Only prune approved changes
@@ -101,7 +101,7 @@ if($mybb->input['action'] == "logs")
 
 	$page->output_nav_tabs($sub_tabs, 'username_logs');
 
-	$perpage = $mybb->get_input('perpage', 1);
+	$perpage = $mybb->get_input('perpage', MyBB::INPUT_INT);
 	if(!$perpage)
 	{
 		if(!$mybb->settings['threadsperpage'] || (int)$mybb->settings['threadsperpage'] < 1)
@@ -117,7 +117,7 @@ if($mybb->input['action'] == "logs")
 	// Searching for entries by a particular user
 	if($mybb->input['uid'])
 	{
-		$where .= " AND h.uid='".$mybb->get_input('uid', 1)."'";
+		$where .= " AND h.uid='".$mybb->get_input('uid', MyBB::INPUT_INT)."'";
 	}
 
 	// Order?
@@ -146,7 +146,7 @@ if($mybb->input['action'] == "logs")
 	// Figure out if we need to display multiple pages.
 	if($mybb->input['page'] != "last")
 	{
-		$pagecnt = $mybb->get_input('page', 1);
+		$pagecnt = $mybb->get_input('page', MyBB::INPUT_INT);
 	}
 
 	$postcount = (int)$rescount;

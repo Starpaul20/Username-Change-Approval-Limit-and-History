@@ -358,7 +358,7 @@ function usernameapprovalhistory_run()
 			error_no_permission();
 		}
 
-		$uid = $mybb->get_input('uid', 1);
+		$uid = $mybb->get_input('uid', MyBB::INPUT_INT);
 		$user = get_user($uid);
 		if(!$user['uid'])
 		{
@@ -372,7 +372,7 @@ function usernameapprovalhistory_run()
 		add_breadcrumb($lang->nav_usernamehistory);
 
 		// Figure out if we need to display multiple pages.
-		$perpage = $mybb->get_input('perpage', 1);
+		$perpage = $mybb->get_input('perpage', MyBB::INPUT_INT);
 		if(!$perpage)
 		{
 			if(!$mybb->settings['threadsperpage'] || (int)$mybb->settings['threadsperpage'] < 1)
@@ -388,7 +388,7 @@ function usernameapprovalhistory_run()
 
 		if($mybb->input['page'] != "last")
 		{
-			$page = $mybb->get_input('page', 1);
+			$page = $mybb->get_input('page', MyBB::INPUT_INT);
 		}
 
 		$pages = $result / $perpage;
@@ -687,7 +687,7 @@ function usernameapprovalhistory_check()
 			error_no_permission();
 		}
 
-		if(validate_password_from_uid($mybb->user['uid'], $mybb->input['password']) == false)
+		if(validate_password_from_uid($mybb->user['uid'], $mybb->get_input('password')) == false)
 		{
 			$errors[] = $lang->error_invalidpassword;
 		}
@@ -699,7 +699,7 @@ function usernameapprovalhistory_check()
 
 			$user = array(
 				"uid" => $mybb->user['uid'],
-				"username" => $mybb->input['username']
+				"username" => $mybb->get_input('username')
 			);
 
 			$userhandler->set_data($user);
@@ -716,7 +716,7 @@ function usernameapprovalhistory_check()
 					"dateline" => TIME_NOW,
 					"ipaddress" => $db->escape_binary($session->packedip),
 					"approval" => 1,
-					"newusername" => $db->escape_string($mybb->input['username'])
+					"newusername" => $db->escape_string($mybb->get_input('username'))
 				);
 				$db->insert_query("usernamehistory", $username_update);
 				update_usernameapproval();
@@ -743,7 +743,7 @@ function usernameapprovalhistory_log()
 		"username" => $db->escape_string($mybb->user['username']),
 		"dateline" => TIME_NOW,
 		"ipaddress" => $db->escape_binary($session->packedip),
-		"newusername" => $db->escape_string($mybb->input['username'])
+		"newusername" => $db->escape_string($mybb->get_input('username'))
 	);
 	$db->insert_query("usernamehistory", $username_update);
 }
@@ -840,7 +840,7 @@ function usernameapprovalhistory_admin_log()
 			"username" => $db->escape_string($user['username']),
 			"dateline" => TIME_NOW,
 			"ipaddress" => $db->escape_binary(my_inet_pton(get_ip())),
-			"newusername" => $db->escape_string($mybb->input['username']),
+			"newusername" => $db->escape_string($mybb->get_input('username')),
 			"adminchange" => 1,
 			"admindata" => $db->escape_string($admindata)
 		);
@@ -878,9 +878,9 @@ function usernameapprovalhistory_usergroup_permission($above)
 function usernameapprovalhistory_usergroup_permission_commit()
 {
 	global $mybb, $updated_group;
-	$updated_group['usernameapproval'] = (int)$mybb->input['usernameapproval'];
-	$updated_group['maxusernamesperiod'] = (int)$mybb->input['maxusernamesperiod'];
-	$updated_group['maxusernamesdaylimit'] = (int)$mybb->input['maxusernamesdaylimit'];
+	$updated_group['usernameapproval'] = $mybb->get_input('usernameapproval', MyBB::INPUT_INT);
+	$updated_group['maxusernamesperiod'] = $mybb->get_input('maxusernamesperiod', MyBB::INPUT_INT);
+	$updated_group['maxusernamesdaylimit'] = $mybb->get_input('maxusernamesdaylimit', MyBB::INPUT_INT);
 }
 
 // Admin CP log page
