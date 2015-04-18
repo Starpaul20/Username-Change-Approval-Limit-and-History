@@ -88,9 +88,39 @@ function usernameapprovalhistory_install()
 	usernameapprovalhistory_uninstall();
 	$collation = $db->build_create_table_collation();
 
-	$db->write_query("CREATE TABLE ".TABLE_PREFIX."usernamehistory (
-				hid int(10) unsigned NOT NULL auto_increment,
-				uid int(10) unsigned NOT NULL default '0',
+	switch($db->type)
+	{
+		case "pgsql":
+			$db->write_query("CREATE TABLE ".TABLE_PREFIX."usernamehistory (
+				hid serial,
+				uid int NOT NULL default '0',
+				username varchar(120) NOT NULL default '',
+				dateline numeric(30,0) NOT NULL default '0',
+				ipaddress bytea NOT NULL default '',
+				approval smallint NOT NULL default '0',
+				newusername varchar(120) NOT NULL default '',
+				adminchange smallint NOT NULL default '0',
+				admindata TEXT NOT NULL,
+				PRIMARY KEY (hid)
+			);");
+			break;
+		case "sqlite":
+			$db->write_query("CREATE TABLE ".TABLE_PREFIX."usernamehistory (
+				hid INTEGER PRIMARY KEY,
+				uid int NOT NULL default '0',
+				username varchar(120) NOT NULL default '',
+				dateline int NOT NULL default '0',
+				ipaddress blob(16) NOT NULL default '',
+				approval tinyint(1) NOT NULL default '0',
+				newusername varchar(120) NOT NULL default '',
+				adminchange tinyint(1) NOT NULL default '0',
+				admindata TEXT NOT NULL
+			);");
+			break;
+		default:
+			$db->write_query("CREATE TABLE ".TABLE_PREFIX."usernamehistory (
+				hid int unsigned NOT NULL auto_increment,
+				uid int unsigned NOT NULL default '0',
 				username varchar(120) NOT NULL default '',
 				dateline int unsigned NOT NULL default '0',
 				ipaddress varbinary(16) NOT NULL default '',
@@ -99,12 +129,29 @@ function usernameapprovalhistory_install()
 				adminchange tinyint(1) NOT NULL default '0',
 				admindata text NOT NULL,
 				KEY uid (uid),
-				PRIMARY KEY(hid)
-			) ENGINE=MyISAM{$collation}");
+				PRIMARY KEY (hid)
+			) ENGINE=MyISAM{$collation};");
+			break;
+	}
 
-	$db->add_column("usergroups", "usernameapproval", "tinyint(1) NOT NULL default '0'");
-	$db->add_column("usergroups", "maxusernamesperiod", "int(3) NOT NULL default '5'");
-	$db->add_column("usergroups", "maxusernamesdaylimit", "int(3) NOT NULL default '30'");
+	switch($db->type)
+	{
+		case "pgsql":
+			$db->add_column("usergroups", "usernameapproval", "smallint NOT NULL default '0'");
+			$db->add_column("usergroups", "maxusernamesperiod", "int NOT NULL default '5'");
+			$db->add_column("usergroups", "maxusernamesdaylimit", "int NOT NULL default '30'");
+			break;
+		case "sqlite":
+			$db->add_column("usergroups", "usernameapproval", "tinyint(1) NOT NULL default '0'");
+			$db->add_column("usergroups", "maxusernamesperiod", "int(3) NOT NULL default '5'");
+			$db->add_column("usergroups", "maxusernamesdaylimit", "int(3) NOT NULL default '30'");
+			break;
+		default:
+			$db->add_column("usergroups", "usernameapproval", "tinyint(1) NOT NULL default '0'");
+			$db->add_column("usergroups", "maxusernamesperiod", "int(3) unsigned NOT NULL default '5'");
+			$db->add_column("usergroups", "maxusernamesdaylimit", "int(3) unsigned NOT NULL default '30'");
+			break;
+	}
 
 	$cache->update_usergroups();
 	update_usernameapproval();
