@@ -18,7 +18,7 @@ if(my_strpos($_SERVER['PHP_SELF'], 'misc.php'))
 	{
 		$templatelist .= ',';
 	}
-	$templatelist .= 'misc_usernamehistory_history,misc_usernamehistory,misc_usernamehistory_no_history';
+	$templatelist .= 'misc_usernamehistory_history,misc_usernamehistory_history_ipaddress,misc_usernamehistory_history_star,misc_usernamehistory,misc_usernamehistory_ipaddress,misc_usernamehistory_no_history';
 }
 
 if(my_strpos($_SERVER['PHP_SELF'], 'member.php'))
@@ -251,6 +251,15 @@ function usernameapprovalhistory_activate()
 	$db->insert_query("templates", $insert_array);
 
 	$insert_array = array(
+		'title'		=> 'misc_usernamehistory_ipaddress',
+		'template'	=> $db->escape_string('<td class="tcat" width="10%" align="center"><span class="smalltext"><strong>{$lang->ip_address}</strong></span></td>'),
+		'sid'		=> '-1',
+		'version'	=> '',
+		'dateline'	=> TIME_NOW
+	);
+	$db->insert_query("templates", $insert_array);
+
+	$insert_array = array(
 		'title'		=> 'misc_usernamehistory_no_history',
 		'template'	=> $db->escape_string('<tr>
 <td class="trow1" colspan="3" align="center">{$lang->no_history}</td>
@@ -268,6 +277,24 @@ function usernameapprovalhistory_activate()
 <td class="{$alt_bg}" align="center">{$dateline}</td>
 {$ipaddressbit}
 </tr>'),
+		'sid'		=> '-1',
+		'version'	=> '',
+		'dateline'	=> TIME_NOW
+	);
+	$db->insert_query("templates", $insert_array);
+
+	$insert_array = array(
+		'title'		=> 'misc_usernamehistory_history_ipaddress',
+		'template'	=> $db->escape_string('<td class="{$alt_bg}" align="center">{$history[\'ipaddress\']}</td>'),
+		'sid'		=> '-1',
+		'version'	=> '',
+		'dateline'	=> TIME_NOW
+	);
+	$db->insert_query("templates", $insert_array);
+
+	$insert_array = array(
+		'title'		=> 'misc_usernamehistory_history_star',
+		'template'	=> $db->escape_string('<span title="{$admin_change}"><strong>*</strong></span>'),
 		'sid'		=> '-1',
 		'version'	=> '',
 		'dateline'	=> TIME_NOW
@@ -334,7 +361,7 @@ function usernameapprovalhistory_deactivate()
 {
 	global $db;
 	$db->delete_query("settings", "name IN('minusernametimewait')");
-	$db->delete_query("templates", "title IN('misc_usernamehistory','misc_usernamehistory_no_history','misc_usernamehistory_history','member_profile_usernamechanges','global_usernameapproval','usercp_changename_approvalnotice','usercp_changename_maxchanges','usercp_changename_changesleft')");
+	$db->delete_query("templates", "title IN('misc_usernamehistory','misc_usernamehistory_ipaddress','misc_usernamehistory_no_history','misc_usernamehistory_history','misc_usernamehistory_history_ipaddress','misc_usernamehistory_history_star','member_profile_usernamechanges','global_usernameapproval','usercp_changename_approvalnotice','usercp_changename_maxchanges','usercp_changename_changesleft')");
 	rebuild_settings();
 
 	include MYBB_ROOT."/inc/adminfunctions_templates.php";
@@ -429,20 +456,18 @@ function usernameapprovalhistory_run()
 			$dateline = my_date('relative', $history['dateline']);
 
 			// Display IP address and admin notation of username changes if user is a mod/admin
+			$ipaddressbit = '';
 			if($mybb->usergroup['cancp'] == 1 || $mybb->usergroup['issupermod'] == 1)
 			{
 				$history['ipaddress'] = my_inet_ntop($db->unescape_binary($history['ipaddress']));
-				$ipaddressbit = "<td class=\"{$alt_bg}\" align=\"center\">{$history['ipaddress']}</td>";
+				eval("\$ipaddressbit = \"".$templates->get("misc_usernamehistory_history_ipaddress")."\";");
 
+				$star = '';
 				if($history['adminchange'] == 1)
 				{
 					$admindata = unserialize($history['admindata']);
 					$admin_change = $lang->sprintf($lang->admin_change, $admindata['username']);
-					$star = "<span title=\"{$admin_change}\"><strong>*</strong></span>";
-				}
-				else
-				{
-					$star = "";
+					eval("\$star = \"".$templates->get("misc_usernamehistory_history_star")."\";");
 				}
 			}
 
@@ -455,14 +480,15 @@ function usernameapprovalhistory_run()
 		}
 
 		// Display IP address of scores if user is a mod/admin
+		$ipaddresscol = '';
 		if($mybb->usergroup['cancp'] == 1 || $mybb->usergroup['issupermod'] == 1)
 		{
-			$ipaddresscol = "<td class=\"tcat\" width=\"10%\" align=\"center\"><span class=\"smalltext\"><strong>{$lang->ip_address}</strong></span></td>";
-			$colspan = "3";
+			eval("\$ipaddresscol = \"".$templates->get("misc_usernamehistory_ipaddress")."\";");
+			$colspan = 3;
 		}
 		else
 		{
-			$colspan = "2";
+			$colspan = 2;
 		}
 
 		eval("\$usernamehistory = \"".$templates->get("misc_usernamehistory")."\";");
