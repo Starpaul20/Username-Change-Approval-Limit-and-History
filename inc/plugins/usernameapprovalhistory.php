@@ -603,10 +603,10 @@ function usernameapprovalhistory_change_page()
 	{
 		$hours = (int)$mybb->settings['minusernametimewait'];
 		$time = TIME_NOW - (60 * 60 * $hours);
-		$query = $db->simple_select("usernamehistory", "hid", "uid='".(int)$mybb->user['uid']."' AND adminchange !='1' AND dateline >= '".($time)."'");
-		$history = $db->fetch_array($query);
+		$query = $db->simple_select("usernamehistory", "COUNT(hid) AS history", "uid='".(int)$mybb->user['uid']."' AND adminchange !='1' AND dateline >= '".($time)."'");
+		$history = $db->fetch_field($query, "history");
 
-		if($history['hid'])
+		if($history > 0)
 		{
 			$lang->error_minimum_wait_time = $lang->sprintf($lang->error_minimum_wait_time, $mybb->settings['minusernametimewait']);
 			error($lang->error_minimum_wait_time);
@@ -616,10 +616,10 @@ function usernameapprovalhistory_change_page()
 	$approvalnotice = "";
 	if($mybb->usergroup['usernameapproval'] == 1)
 	{
-		$query = $db->simple_select("usernamehistory", "hid", "uid='".(int)$mybb->user['uid']."' AND approval='1'");
-		$history = $db->fetch_array($query);
+		$query = $db->simple_select("usernamehistory", "COUNT(hid) AS approval", "uid='".(int)$mybb->user['uid']."' AND approval='1'");
+		$approval = $db->fetch_field($query, "approval");
 
-		if($history['hid'])
+		if($approval > 0)
 		{
 			error($lang->error_alreadyawaiting);
 		}
@@ -686,20 +686,20 @@ function usernameapprovalhistory_check()
 	{
 		$hours = (int)$mybb->settings['minusernametimewait'];
 		$time = TIME_NOW - (60 * 60 * $hours);
-		$query = $db->simple_select("usernamehistory", "hid", "uid='".(int)$mybb->user['uid']."' AND adminchange !='1' AND dateline >= '".($time)."'");
-		$history = $db->fetch_array($query);
+		$query = $db->simple_select("usernamehistory", "COUNT(hid) AS history", "uid='".(int)$mybb->user['uid']."' AND adminchange !='1' AND dateline >= '".($time)."'");
+		$history = $db->fetch_field($query, "history");
 
-		if($history['hid'])
+		if($history > 0)
 		{
 			$lang->error_minimum_wait_time = $lang->sprintf($lang->error_minimum_wait_time, $mybb->settings['minusernametimewait']);
 			error($lang->error_minimum_wait_time);
 		}
 	}
 
-	$query = $db->simple_select("usernamehistory", "hid", "uid='".(int)$mybb->user['uid']."' AND approval='1'");
-	$history = $db->fetch_array($query);
+	$query = $db->simple_select("usernamehistory", "COUNT(hid) AS approval", "uid='".(int)$mybb->user['uid']."' AND approval='1'");
+	$approval = $db->fetch_field($query, "approval");
 
-	if($history['hid'])
+	if($approval > 0)
 	{
 		error($lang->error_alreadyawaiting);
 	}
