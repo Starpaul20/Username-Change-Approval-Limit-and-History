@@ -500,7 +500,7 @@ function usernameapprovalhistory_run()
 // Username history on User Profile
 function usernameapprovalhistory_profile()
 {
-	global $db, $mybb, $lang, $templates, $memprofile, $username_changes;
+	global $db, $lang, $templates, $memprofile, $username_changes;
 	$lang->load("usernameapprovalhistory");
 
 	$query = $db->simple_select("usernamehistory", "COUNT(hid) AS num_changes", "uid='".(int)$memprofile['uid']."' AND approval='0'");
@@ -559,7 +559,7 @@ function usernameapprovalhistory_change_page()
 	$lang->load("usernameapprovalhistory");
 
 	// Check group limits
-	$changesleft = "";
+	$changesleft = '';
 	if($mybb->usergroup['maxusernamesperiod'] > 0)
 	{
 		if($mybb->usergroup['maxusernamesdaylimit'] > 0)
@@ -613,7 +613,7 @@ function usernameapprovalhistory_change_page()
 		}
 	}
 
-	$approvalnotice = "";
+	$approvalnotice = '';
 	if($mybb->usergroup['usernameapproval'] == 1)
 	{
 		$query = $db->simple_select("usernamehistory", "COUNT(hid) AS approval", "uid='".(int)$mybb->user['uid']."' AND approval='1'");
@@ -627,7 +627,7 @@ function usernameapprovalhistory_change_page()
 		eval("\$approvalnotice = \"".$templates->get("usercp_changename_approvalnotice")."\";");
 	}
 
-	$maxchanges = "";
+	$maxchanges = '';
 	if($mybb->usergroup['maxusernamesperiod'] > 0)
 	{
 		if(empty($mybb->usergroup['maxusernamesdaylimit']))
@@ -795,7 +795,7 @@ function usernameapprovalhistory_online_activity($user_activity)
 
 function usernameapprovalhistory_online_location($plugin_array)
 {
-    global $lang, $parameters, $usernames;
+	global $lang, $parameters, $usernames;
 	$lang->load("usernameapprovalhistory");
 
 	if($plugin_array['user_activity']['activity'] == "misc_usernamehistory")
@@ -878,7 +878,7 @@ function usernameapprovalhistory_admin_log()
 // Merge username history if users are merged
 function usernameapprovalhistory_merge()
 {
-    global $db, $mybb, $source_user, $destination_user;
+	global $db, $source_user, $destination_user;
 
 	$uid = array(
 		"uid" => $destination_user['uid']
@@ -930,7 +930,7 @@ function usernameapprovalhistory_admin_action_handler($actions)
 
 function usernameapprovalhistory_admin_permissions($admin_permissions)
 {
-  	global $db, $mybb, $lang;
+	global $lang;
 	$lang->load("user_name_approval");
 
 	$admin_permissions['name_approval'] = $lang->can_manage_name_approval;
