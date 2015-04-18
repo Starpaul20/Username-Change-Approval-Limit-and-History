@@ -444,13 +444,7 @@ function usernameapprovalhistory_run()
 		$multipage = multipage($result, $perpage, $page, "misc.php?action=usernamehistory&uid={$user['uid']}");
 
 		// Fetch the usernames which will be displayed on this page
-		$query = $db->query("
-			SELECT *
-			FROM ".TABLE_PREFIX."usernamehistory
-			WHERE uid='{$user['uid']}' AND approval='0'
-			ORDER BY dateline desc
-			LIMIT {$start}, {$perpage}
-		");
+		$query = $db->simple_select("usernamehistory", "*", "uid='{$user['uid']}' AND approval='0'", array("order_by" => "dateline", "order_dir" => "desc", "limit_start" => $start, "limit" => $perpage));
 		while($history = $db->fetch_array($query))
 		{
 			$alt_bg = alt_trow();
