@@ -1,3 +1,13 @@
+1.2 (April 18th, 2015)
+- Added PostgreSQL and SQLite support
+- Using generate_numeric_field function
+- Changed (int)$mybb->input to $mybb->get_input
+- Moved hardcoded HTML to template
+- Updated cache delete function
+- Update check queries on change name page
+- Use simple_select for simple query
+- General file cleanup
+
 1.1 (December 12th, 2014)
 - Added ability to prune username change history (Issue #2)
 - Added Admin CP notice of pending username changes awaiting approval (Issue #3)
