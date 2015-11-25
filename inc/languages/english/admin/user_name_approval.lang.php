@@ -20,6 +20,8 @@ $l['approve_username_changes'] = "Require username changes to be approved?";
 $l['name_approval'] = "Username Changes";
 $l['can_manage_name_approval'] = "Can manage username change approval?";
 
+$l['can_approve_username_changes'] = "Can approve username change?";
+
 // Admin Log
 $l['admin_log_user_name_approval'] = "Moderated username changes";
 $l['admin_log_user_name_approval_prune'] = "Pruned {3} username change logs older than {1} days";

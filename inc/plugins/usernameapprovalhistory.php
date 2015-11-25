@@ -31,6 +31,16 @@ if(my_strpos($_SERVER['PHP_SELF'], 'member.php'))
 	$templatelist .= 'member_profile_usernamechanges';
 }
 
+if(my_strpos($_SERVER['PHP_SELF'], 'modcp.php'))
+{
+	global $templatelist;
+	if(isset($templatelist))
+	{
+		$templatelist .= ',';
+	}
+	$templatelist .= 'modcp_nav_usernameapproval,modcp_usernameapproval,modcp_usernameapproval_actions,modcp_usernameapproval_none,modcp_usernameapproval_row';
+}
+
 if(my_strpos($_SERVER['PHP_SELF'], 'usercp.php'))
 {
 	global $templatelist;
@@ -49,6 +59,8 @@ $plugins->add_hook("global_intermediate", "usernameapprovalhistory_notify");
 $plugins->add_hook("usercp_changename_start", "usernameapprovalhistory_change_page");
 $plugins->add_hook("usercp_do_changename_start", "usernameapprovalhistory_check");
 $plugins->add_hook("usercp_do_changename_end", "usernameapprovalhistory_log");
+$plugins->add_hook("modcp_nav", "usernameapprovalhistory_modcp_nav");
+$plugins->add_hook("modcp_start", "usernameapprovalhistory_modcp_page");
 $plugins->add_hook("fetch_wol_activity_end", "usernameapprovalhistory_online_activity");
 $plugins->add_hook("build_friendly_wol_location_end", "usernameapprovalhistory_online_location");
 $plugins->add_hook("datahandler_user_delete_content", "usernameapprovalhistory_delete");
@@ -140,16 +152,19 @@ function usernameapprovalhistory_install()
 			$db->add_column("usergroups", "usernameapproval", "smallint NOT NULL default '0'");
 			$db->add_column("usergroups", "maxusernamesperiod", "int NOT NULL default '5'");
 			$db->add_column("usergroups", "maxusernamesdaylimit", "int NOT NULL default '30'");
+			$db->add_column("usergroups", "canapproveusernames", "smallint NOT NULL default '1'");
 			break;
 		case "sqlite":
 			$db->add_column("usergroups", "usernameapproval", "tinyint(1) NOT NULL default '0'");
 			$db->add_column("usergroups", "maxusernamesperiod", "int(3) NOT NULL default '5'");
 			$db->add_column("usergroups", "maxusernamesdaylimit", "int(3) NOT NULL default '30'");
+			$db->add_column("usergroups", "canapproveusernames", "tinyint(1) NOT NULL default '1'");
 			break;
 		default:
 			$db->add_column("usergroups", "usernameapproval", "tinyint(1) NOT NULL default '0'");
 			$db->add_column("usergroups", "maxusernamesperiod", "int(3) unsigned NOT NULL default '5'");
 			$db->add_column("usergroups", "maxusernamesdaylimit", "int(3) unsigned NOT NULL default '30'");
+			$db->add_column("usergroups", "canapproveusernames", "tinyint(1) NOT NULL default '1'");
 			break;
 	}
 
@@ -190,6 +205,11 @@ function usernameapprovalhistory_uninstall()
 	if($db->field_exists("maxusernamesdaylimit", "usergroups"))
 	{
 		$db->drop_column("usergroups", "maxusernamesdaylimit");
+	}
+
+	if($db->field_exists("canapproveusernames", "usergroups"))
+	{
+		$db->drop_column("usergroups", "canapproveusernames");
 	}
 
 	$cache->update_usergroups();
@@ -347,10 +367,103 @@ function usernameapprovalhistory_activate()
 	);
 	$db->insert_query("templates", $insert_array);
 
+	$insert_array = array(
+		'title'		=> 'modcp_nav_usernameapproval',
+		'template'	=> $db->escape_string('<tr><td class="trow1 smalltext"><a href="modcp.php?action=usernameapproval" class="modcp_nav_item" style="background:url(\'images/usernameapproval.png\') no-repeat left center;">{$lang->mcp_nav_usernameapproval}</a></td></tr>'),
+		'sid'		=> '-1',
+		'version'	=> '',
+		'dateline'	=> TIME_NOW
+	);
+	$db->insert_query("templates", $insert_array);
+
+	$insert_array = array(
+		'title'		=> 'modcp_usernameapproval',
+		'template'	=> $db->escape_string('<html>
+<head>
+<title>{$mybb->settings[\'bbname\']} - {$lang->username_approval}</title>
+{$headerinclude}
+</head>
+<body>
+	{$header}
+	<form action="modcp.php" method="post">
+		<input type="hidden" name="my_post_key" value="{$mybb->post_code}" />
+		<table width="100%" border="0" align="center">
+			<tr>
+				{$modcp_nav}
+				<td valign="top">
+					<table border="0" cellspacing="{$theme[\'borderwidth\']}" cellpadding="{$theme[\'tablespace\']}" class="tborder">
+						<tr>
+							<td class="thead" colspan="5"><strong>{$lang->username_approval}</strong></td>
+						</tr>
+						<tr>
+							<td class="tcat" align="center" width="25%"><span class="smalltext"><strong>{$lang->current_name}</strong></span></td>
+							<td class="tcat" align="center" width="25%"><span class="smalltext"><strong>{$lang->new_username}</strong></span></td>
+							<td class="tcat" align="center" width="25%"><span class="smalltext"><strong>{$lang->dateline}</strong></span></td>
+							<td class="tcat" align="center" width="15%"><span class="smalltext"><strong>{$lang->ipaddress}</strong></span></td>
+							<td class="tcat" align="center" width="1"><input name="allbox" title="Select All" type="checkbox" class="checkbox checkall" value="1" /></td>
+						</tr>
+						{$usernameapproval}
+						{$multipage}
+					</table>
+					<br />
+					<div align="center">
+						<input type="hidden" name="action" value="do_usernameapproval" />
+						{$usernameapproval_delete_actions}
+					</div>
+				</td>
+			</tr>
+		</table>
+	</form>
+	{$footer}
+</body>
+</html>'),
+		'sid'		=> '-1',
+		'version'	=> '',
+		'dateline'	=> TIME_NOW
+	);
+	$db->insert_query("templates", $insert_array);
+
+	$insert_array = array(
+		'title'		=> 'modcp_usernameapproval_actions',
+		'template'	=> $db->escape_string('<input type="submit" class="button" name="approve" value="{$lang->approve_changes}" />
+<input type="submit" class="button" name="delete" value="{$lang->delete_changes}" />'),
+		'sid'		=> '-1',
+		'version'	=> '',
+		'dateline'	=> TIME_NOW
+	);
+	$db->insert_query("templates", $insert_array);
+
+	$insert_array = array(
+		'title'		=> 'modcp_usernameapproval_none',
+		'template'	=> $db->escape_string('<tr>
+	<td class="trow1" colspan="5" align="center">{$lang->no_usernames_awaiting_approval}</td>
+</tr>'),
+		'sid'		=> '-1',
+		'version'	=> '',
+		'dateline'	=> TIME_NOW
+	);
+	$db->insert_query("templates", $insert_array);
+
+	$insert_array = array(
+		'title'		=> 'modcp_usernameapproval_row',
+		'template'	=> $db->escape_string('<tr>
+	<td class="{$alt_bg}" align="center">{$usernamehistory[\'username\']}</td>
+	<td class="{$alt_bg}" align="center">{$usernamehistory[\'newusername\']}</td>
+	<td class="{$alt_bg}" align="center">{$dateline}</td>
+	<td class="{$alt_bg}" align="center">{$usernamehistory[\'ipaddress\']}</td>
+	<td class="{$alt_bg}" align="center"><input type="checkbox" class="checkbox" name="check[{$usernamehistory[\'hid\']}]" value="{$usernamehistory[\'hid\']}" /></td>
+</tr>'),
+		'sid'		=> '-1',
+		'version'	=> '',
+		'dateline'	=> TIME_NOW
+	);
+	$db->insert_query("templates", $insert_array);
+
 	include MYBB_ROOT."/inc/adminfunctions_templates.php";
 	find_replace_templatesets("member_profile", "#".preg_quote('{$online_status}')."#i", '{$online_status}{$username_changes}');
 	find_replace_templatesets("usercp_changename", "#".preg_quote('{$lang->new_username}</strong>')."#i", '{$lang->new_username}</strong>{$maxchanges}{$approvalnotice}{$changesleft}');
 	find_replace_templatesets("header", "#".preg_quote('{$pm_notice}')."#i", '{$pm_notice}{$username_approval}');
+	find_replace_templatesets("modcp_nav_users", "#".preg_quote('{$nav_ipsearch}')."#i", '{$nav_ipsearch}{$nav_usernameapproval}');
 
 	change_admin_permission('user', 'name_approval');
 
@@ -363,12 +476,14 @@ function usernameapprovalhistory_deactivate()
 	global $db;
 	$db->delete_query("settings", "name IN('minusernametimewait')");
 	$db->delete_query("templates", "title IN('misc_usernamehistory','misc_usernamehistory_ipaddress','misc_usernamehistory_no_history','misc_usernamehistory_history','misc_usernamehistory_history_ipaddress','misc_usernamehistory_history_star','member_profile_usernamechanges','global_usernameapproval','usercp_changename_approvalnotice','usercp_changename_maxchanges','usercp_changename_changesleft')");
+	$db->delete_query("templates", "title IN('modcp_nav_usernameapproval','modcp_usernameapproval','modcp_usernameapproval_actions','modcp_usernameapproval_none','modcp_usernameapproval_row')");
 	rebuild_settings();
 
 	include MYBB_ROOT."/inc/adminfunctions_templates.php";
 	find_replace_templatesets("member_profile", "#".preg_quote('{$username_changes}')."#i", '', 0);
 	find_replace_templatesets("usercp_changename", "#".preg_quote('{$maxchanges}{$approvalnotice}{$changesleft}')."#i", '', 0);
 	find_replace_templatesets("header", "#".preg_quote('{$username_approval}')."#i", '', 0);
+	find_replace_templatesets("modcp_nav_users", "#".preg_quote('{$nav_usernameapproval}')."#i", '', 0);
 
 	change_admin_permission('user', 'name_approval', -1);
 }
@@ -769,6 +884,175 @@ function usernameapprovalhistory_log()
 	$db->insert_query("usernamehistory", $username_update);
 }
 
+// Mod CP nav menu
+function usernameapprovalhistory_modcp_nav()
+{
+	global $mybb, $lang, $templates, $nav_usernameapproval;
+	$lang->load("usernameapprovalhistory");
+
+	if($mybb->usergroup['canapproveusernames'] == 1)
+	{
+		eval("\$nav_usernameapproval = \"".$templates->get("modcp_nav_usernameapproval")."\";");
+	}
+}
+
+// Mod CP approval page
+function usernameapprovalhistory_modcp_page()
+{
+	global $db, $mybb, $lang, $templates, $theme, $cache, $headerinclude, $header, $footer, $modcp_nav, $multipage, $usernameapproval_delete_actions;
+	$lang->load("usernameapprovalhistory");
+
+	if($mybb->input['action'] == "do_usernameapproval")
+	{
+		// Verify incoming POST request
+		verify_post_check($mybb->get_input('my_post_key'));
+
+		if($mybb->usergroup['canapproveusernames'] == 0)
+		{
+			error_no_permission();
+		}
+
+		$mybb->input['check'] = $mybb->get_input('check', MyBB::INPUT_ARRAY);
+		if(empty($mybb->input['check']))
+		{
+			error($lang->no_users_selected);
+		}
+
+		require_once MYBB_ROOT."inc/datahandlers/user.php";
+		$userhandler = new UserDataHandler("update");
+
+		if($mybb->get_input('approve')) // approve changes
+		{
+			// Fetch users
+			$query = $db->simple_select("usernamehistory", "hid, uid, newusername", "hid IN (".implode(",", array_map("intval", array_keys($mybb->input['check']))).")");
+			while($history = $db->fetch_array($query))
+			{
+				$user = array(
+					"uid" => $history['uid'],
+					"username" => $history['newusername']
+				);
+
+				$userhandler->set_data($user);
+				$errors = '';
+
+				if(!$userhandler->validate_user())
+				{
+					$errors = $userhandler->get_friendly_errors();
+				}
+				else
+				{
+					$userhandler->update_user();
+
+					$approval = array(
+						"approval" => 0
+					);
+					$db->update_query("usernamehistory", $approval, "hid='{$history['hid']}'");
+				}
+			}
+
+			$message = $lang->redirect_changes_approved;
+		}
+
+		if($mybb->get_input('delete')) // delete changes
+		{
+			$db->delete_query("usernamehistory", "hid IN (".implode(",", array_map("intval", array_keys($mybb->input['check']))).")");
+
+			$message = $lang->redirect_changes_deleted;
+		}
+
+		update_usernameapproval();
+		redirect("modcp.php?action=usernameapproval", $message);
+	}
+
+	if($mybb->input['action'] == "usernameapproval")
+	{
+		add_breadcrumb($lang->mcp_nav_home, "modcp.php");
+		add_breadcrumb($lang->mcp_nav_usernameapproval, "modcp.php?action=usernameapproval");
+
+		if($mybb->usergroup['canapproveusernames'] == 0)
+		{
+			error_no_permission();
+		}
+
+		if(!$mybb->settings['threadsperpage'] || (int)$mybb->settings['threadsperpage'] < 1)
+		{
+			$mybb->settings['threadsperpage'] = 20;
+		}
+
+		// Figure out if we need to display multiple pages.
+		$perpage = $mybb->get_input('perpage', MyBB::INPUT_INT);
+		if(!$perpage || $perpage <= 0)
+		{
+			$perpage = $mybb->settings['threadsperpage'];
+		}
+
+		$query = $db->simple_select("usernamehistory", "COUNT(hid) AS count", "approval ='1'");
+		$result = $db->fetch_field($query, "count");
+
+		// Figure out if we need to display multiple pages.
+		if($mybb->input['page'] != "last")
+		{
+			$page = $mybb->get_input('page', MyBB::INPUT_INT);
+		}
+
+		$pages = $result / $perpage;
+		$pages = ceil($pages);
+
+		if($mybb->input['page'] == "last")
+		{
+			$page = $pages;
+		}
+
+		if($page > $pages || $page <= 0)
+		{
+			$page = 1;
+		}
+		if($page)
+		{
+			$start = ($page-1) * $perpage;
+		}
+		else
+		{
+			$start = 0;
+			$page = 1;
+		}
+
+		$multipage = multipage($result, $perpage, $page, "modcp.php?action=usernameapproval");
+
+		$query2 = $db->query("
+			SELECT *
+			FROM ".TABLE_PREFIX."usernamehistory h
+			WHERE h.approval='1'
+			ORDER BY h.dateline DESC
+			LIMIT {$start}, {$perpage}
+		");
+		while($usernamehistory = $db->fetch_array($query2))
+		{
+			$alt_bg = alt_trow();
+			$usernamehistory['username'] = build_profile_link($usernamehistory['username'], $usernamehistory['uid']);
+			$dateline = my_date('relative', $usernamehistory['dateline']);
+			$usernamehistory['ipaddress'] = my_inet_ntop($db->unescape_binary($usernamehistory['ipaddress']));
+			$usernamehistory['newusername'] = htmlspecialchars_uni($usernamehistory['newusername']);
+
+			eval("\$usernameapproval .= \"".$templates->get("modcp_usernameapproval_row")."\";");
+		}
+
+		$usernameapproval_delete_actions = '';
+		if(!empty($usernameapproval))
+		{
+			eval("\$usernameapproval_delete_actions = \"".$templates->get("modcp_usernameapproval_actions")."\";");
+		}
+
+		if(!$usernameapproval)
+		{
+			eval("\$usernameapproval = \"".$templates->get("modcp_usernameapproval_none")."\";");
+		}
+
+		eval("\$modusernameapproval = \"".$templates->get("modcp_usernameapproval")."\";");
+		output_page($modusernameapproval);
+	}
+}
+
 // Online activity
 function usernameapprovalhistory_online_activity($user_activity)
 {
@@ -893,6 +1177,11 @@ function usernameapprovalhistory_usergroup_permission($above)
 		$above['content'] .= "<div class=\"group_settings_bit\">{$lang->username_changes_day_limit}:<br /><small>{$lang->username_changes_day_limit_desc}</small><br />".$form->generate_numeric_field('maxusernamesdaylimit', $mybb->input['maxusernamesdaylimit'], array('id' => 'maxusernamesdaylimit', 'class' => 'field50', 'min' => 0))."</div>";
 	}
 
+	if($above['title'] == $lang->user_options && $lang->user_options)
+	{
+		$above['content'] .= "<div class=\"group_settings_bit\">".$form->generate_check_box("canapproveusernames", 1, $lang->can_approve_username_changes, array("checked" => $mybb->input['canapproveusernames']))."</div>";
+	}
+
 	return $above;
 }
 
@@ -902,6 +1191,7 @@ function usernameapprovalhistory_usergroup_permission_commit()
 	$updated_group['usernameapproval'] = $mybb->get_input('usernameapproval', MyBB::INPUT_INT);
 	$updated_group['maxusernamesperiod'] = $mybb->get_input('maxusernamesperiod', MyBB::INPUT_INT);
 	$updated_group['maxusernamesdaylimit'] = $mybb->get_input('maxusernamesdaylimit', MyBB::INPUT_INT);
+	$updated_group['canapproveusernames'] = $mybb->get_input('canapproveusernames', MyBB::INPUT_INT);
 }
 
 // Admin CP log page

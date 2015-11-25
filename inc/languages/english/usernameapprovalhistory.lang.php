@@ -33,4 +33,16 @@ $l['error_minimum_wait_time'] = "You must wait a minimum of {1} hours before you
 $l['unread_approval_count'] = "Administrator Notice: There is 1 username change awaiting approval.";
 $l['unread_approval_counts'] = "Administrator Notice: There are {1} username changes awaiting approval.";
 
+$l['mcp_nav_usernameapproval'] = "Username Approval";
+$l['username_approval'] = "Username Change Approval";
+$l['current_name'] = "Current Username";
+$l['dateline'] = "Date";
+$l['ipaddress'] = "IP Address";
+$l['new_username'] = "New Username";
+$l['no_usernames_awaiting_approval'] = "There are no username changes awaiting approval.";
+$l['approve_changes'] = "Approve Changes";
+$l['delete_changes'] = "Delete Changes";
+$l['redirect_changes_approved'] = "The username changes have been approved successfully.<br />You will now be redirected to the username changes page.";
+$l['redirect_changes_deleted'] = "The username changes have been deleted successfully.<br />You will now be redirected to the username changes page.";
+
 ?>
