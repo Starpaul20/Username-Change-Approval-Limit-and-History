@@ -249,18 +249,17 @@ function usernameapprovalhistory_activate()
 <body>
 {$header}
 {$multipage}
-<table border="0" cellspacing="{$theme[\'borderwidth\']}" cellpadding="{$theme[\'tablespace\']}" class="tborder">
-<tr>
-<td class="thead" colspan="{$colspan}"><strong>{$lang->username_history_for}</strong></td>
-</tr>
-<tr>
-<td class="tcat" align="center"><span class="smalltext"><strong>{$lang->old_username}</strong></span></td>
-<td class="tcat" width="40%" align="center"><span class="smalltext"><strong>{$lang->date_changed}</strong></span></td>
-{$ipaddresscol}
-</tr>
-{$usernamehistory_bit}
-</tr>
-</table>
+	<table border="0" cellspacing="{$theme[\'borderwidth\']}" cellpadding="{$theme[\'tablespace\']}" class="tborder">
+		<tr>
+			<td class="thead" colspan="{$colspan}"><strong>{$lang->username_history_for}</strong></td>
+		</tr>
+		<tr>
+			<td class="tcat" align="center"><span class="smalltext"><strong>{$lang->old_username}</strong></span></td>
+			<td class="tcat" width="40%" align="center"><span class="smalltext"><strong>{$lang->date_changed}</strong></span></td>
+			{$ipaddresscol}
+		</tr>
+		{$usernamehistory_bit}
+	</table>
 {$multipage}
 {$footer}
 </body>
@@ -283,7 +282,7 @@ function usernameapprovalhistory_activate()
 	$insert_array = array(
 		'title'		=> 'misc_usernamehistory_no_history',
 		'template'	=> $db->escape_string('<tr>
-<td class="trow1" colspan="3" align="center">{$lang->no_history}</td>
+	<td class="trow1" colspan="3" align="center">{$lang->no_history}</td>
 </tr>'),
 		'sid'		=> '-1',
 		'version'	=> '',
@@ -294,9 +293,9 @@ function usernameapprovalhistory_activate()
 	$insert_array = array(
 		'title'		=> 'misc_usernamehistory_history',
 		'template'	=> $db->escape_string('<tr>
-<td class="{$alt_bg}" align="center">{$history[\'username\']}{$star}</td>
-<td class="{$alt_bg}" align="center">{$dateline}</td>
-{$ipaddressbit}
+	<td class="{$alt_bg}" align="center">{$history[\'username\']}{$star}</td>
+	<td class="{$alt_bg}" align="center">{$dateline}</td>
+	{$ipaddressbit}
 </tr>'),
 		'sid'		=> '-1',
 		'version'	=> '',
