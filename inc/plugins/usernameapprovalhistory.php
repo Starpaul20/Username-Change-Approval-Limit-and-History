@@ -352,7 +352,7 @@ function usernameapprovalhistory_activate()
 
 	$insert_array = array(
 		'title'		=> 'global_usernameapproval',
-		'template'	=> $db->escape_string('<div class="red_alert"><a href="{$mybb->settings[\'bburl\']}/{$config[\'admin_dir\']}/index.php?module=user-name_approval">{$lang->unread_approval_counts}</a></div>'),
+		'template'	=> $db->escape_string('<div class="red_alert"><a href="{$mybb->settings[\'bburl\']}/modcp.php?action=usernameapproval">{$lang->unread_approval_counts}</a></div>'),
 		'sid'		=> '-1',
 		'version'	=> '',
 		'dateline'	=> TIME_NOW
@@ -680,12 +680,12 @@ function usernameapprovalhistory_notify_cache()
 // Alerts Admins on username awaiting approval
 function usernameapprovalhistory_notify()
 {
-	global $mybb, $lang, $cache, $templates, $config, $username_approval;
+	global $mybb, $lang, $cache, $templates, $username_approval;
 	$lang->load("usernameapprovalhistory");
 
 	$username_approval = '';
-	// This user is an administrator and admin links aren't hidden
-	if($mybb->usergroup['cancp'] == 1 && $mybb->config['hide_admin_links'] != 1)
+	// This user can approve username changes
+	if($mybb->usergroup['canapproveusernames'] == 1 && $mybb->usergroup['canmodcp'] == 1)
 	{
 		// Read the username awaiting approval cache
 		$awaitingapproval = $cache->read("usernameapproval");
