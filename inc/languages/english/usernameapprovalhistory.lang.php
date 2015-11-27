@@ -13,6 +13,8 @@ $l['username_history_for'] = "Username History for {1}";
 $l['old_username'] = "Old Username";
 $l['date_changed'] = "Date Changed";
 $l['ip_address'] = "IP Address";
+$l['options'] = "Options";
+$l['delete'] = "Delete";
 $l['no_history'] = "There is no username history associated with this user.";
 $l['username_changes'] = "Username Changes";
 $l['admin_change'] = "Username was changed by {1} from the Admin CP";
@@ -44,5 +46,9 @@ $l['approve_changes'] = "Approve Changes";
 $l['delete_changes'] = "Delete Changes";
 $l['redirect_changes_approved'] = "The username changes have been approved successfully.<br />You will now be redirected to the username changes page.";
 $l['redirect_changes_deleted'] = "The username changes have been deleted successfully.<br />You will now be redirected to the username changes page.";
+
+$l['delete_history_confirm'] = "Are you sure you wish to delete this username history entry?";
+$l['error_invalidhistory'] = "You have selected an invalid username history entry.";
+$l['redirect_historydeleted'] = "The username history entry has been deleted successfully.";
 
 ?>

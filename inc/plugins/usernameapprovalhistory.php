@@ -18,7 +18,7 @@ if(my_strpos($_SERVER['PHP_SELF'], 'misc.php'))
 	{
 		$templatelist .= ',';
 	}
-	$templatelist .= 'misc_usernamehistory_history,misc_usernamehistory_history_ipaddress,misc_usernamehistory_history_star,misc_usernamehistory,misc_usernamehistory_ipaddress,misc_usernamehistory_no_history';
+	$templatelist .= 'misc_usernamehistory_history,misc_usernamehistory_history_ipaddress,misc_usernamehistory_history_delete,misc_usernamehistory_history_star,misc_usernamehistory,misc_usernamehistory_ipaddress,misc_usernamehistory_delete,misc_usernamehistory_no_history';
 }
 
 if(my_strpos($_SERVER['PHP_SELF'], 'member.php'))
@@ -257,6 +257,7 @@ function usernameapprovalhistory_activate()
 			<td class="tcat" align="center"><span class="smalltext"><strong>{$lang->old_username}</strong></span></td>
 			<td class="tcat" width="40%" align="center"><span class="smalltext"><strong>{$lang->date_changed}</strong></span></td>
 			{$ipaddresscol}
+			{$optionscol}
 		</tr>
 		{$usernamehistory_bit}
 	</table>
@@ -280,9 +281,18 @@ function usernameapprovalhistory_activate()
 	$db->insert_query("templates", $insert_array);
 
 	$insert_array = array(
+		'title'		=> 'misc_usernamehistory_delete',
+		'template'	=> $db->escape_string('<td class="tcat" width="10%" align="center"><span class="smalltext"><strong>{$lang->options}</strong></span></td>'),
+		'sid'		=> '-1',
+		'version'	=> '',
+		'dateline'	=> TIME_NOW
+	);
+	$db->insert_query("templates", $insert_array);
+
+	$insert_array = array(
 		'title'		=> 'misc_usernamehistory_no_history',
 		'template'	=> $db->escape_string('<tr>
-	<td class="trow1" colspan="3" align="center">{$lang->no_history}</td>
+	<td class="trow1" colspan="4" align="center">{$lang->no_history}</td>
 </tr>'),
 		'sid'		=> '-1',
 		'version'	=> '',
@@ -296,6 +306,7 @@ function usernameapprovalhistory_activate()
 	<td class="{$alt_bg}" align="center">{$history[\'username\']}{$star}</td>
 	<td class="{$alt_bg}" align="center">{$dateline}</td>
 	{$ipaddressbit}
+	{$deletebit}
 </tr>'),
 		'sid'		=> '-1',
 		'version'	=> '',
@@ -306,6 +317,15 @@ function usernameapprovalhistory_activate()
 	$insert_array = array(
 		'title'		=> 'misc_usernamehistory_history_ipaddress',
 		'template'	=> $db->escape_string('<td class="{$alt_bg}" align="center">{$history[\'ipaddress\']}</td>'),
+		'sid'		=> '-1',
+		'version'	=> '',
+		'dateline'	=> TIME_NOW
+	);
+	$db->insert_query("templates", $insert_array);
+
+	$insert_array = array(
+		'title'		=> 'misc_usernamehistory_history_delete',
+		'template'	=> $db->escape_string('<td class="{$alt_bg}" align="center"><a href="misc.php?action=usernamehistorydelete&amp;hid={$history[\'hid\']}&amp;my_post_key={$mybb->post_code}"  onclick="if(confirm(&quot;{$lang->delete_history_confirm}&quot;))window.location=this.href.replace(\'action=usernamehistorydelete\',\'action=usernamehistorydelete\');return false;">{$lang->delete}</a></td>'),
 		'sid'		=> '-1',
 		'version'	=> '',
 		'dateline'	=> TIME_NOW
@@ -474,7 +494,7 @@ function usernameapprovalhistory_deactivate()
 {
 	global $db;
 	$db->delete_query("settings", "name IN('minusernametimewait')");
-	$db->delete_query("templates", "title IN('misc_usernamehistory','misc_usernamehistory_ipaddress','misc_usernamehistory_no_history','misc_usernamehistory_history','misc_usernamehistory_history_ipaddress','misc_usernamehistory_history_star','member_profile_usernamechanges','global_usernameapproval','usercp_changename_approvalnotice','usercp_changename_maxchanges','usercp_changename_changesleft')");
+	$db->delete_query("templates", "title IN('misc_usernamehistory','misc_usernamehistory_ipaddress','misc_usernamehistory_delete','misc_usernamehistory_no_history','misc_usernamehistory_history','misc_usernamehistory_history_ipaddress','misc_usernamehistory_history_delete','misc_usernamehistory_history_star','member_profile_usernamechanges','global_usernameapproval','usercp_changename_approvalnotice','usercp_changename_maxchanges','usercp_changename_changesleft')");
 	$db->delete_query("templates", "title IN('modcp_nav_usernameapproval','modcp_usernameapproval','modcp_usernameapproval_actions','modcp_usernameapproval_none','modcp_usernameapproval_row')");
 	rebuild_settings();
 
@@ -565,11 +585,12 @@ function usernameapprovalhistory_run()
 			$dateline = my_date('relative', $history['dateline']);
 
 			// Display IP address and admin notation of username changes if user is a mod/admin
-			$ipaddressbit = '';
+			$ipaddressbit = $deletebit = '';
 			if($mybb->usergroup['cancp'] == 1 || $mybb->usergroup['issupermod'] == 1)
 			{
 				$history['ipaddress'] = my_inet_ntop($db->unescape_binary($history['ipaddress']));
 				eval("\$ipaddressbit = \"".$templates->get("misc_usernamehistory_history_ipaddress")."\";");
+				eval("\$deletebit = \"".$templates->get("misc_usernamehistory_history_delete")."\";");
 
 				$star = '';
 				if($history['adminchange'] == 1)
@@ -588,12 +609,13 @@ function usernameapprovalhistory_run()
 			eval("\$usernamehistory_bit = \"".$templates->get("misc_usernamehistory_no_history")."\";");
 		}
 
-		// Display IP address of scores if user is a mod/admin
-		$ipaddresscol = '';
+		// Display IP address and delete option if user is a mod/admin
+		$ipaddresscol = $optionscol = '';
 		if($mybb->usergroup['cancp'] == 1 || $mybb->usergroup['issupermod'] == 1)
 		{
 			eval("\$ipaddresscol = \"".$templates->get("misc_usernamehistory_ipaddress")."\";");
-			$colspan = 3;
+			eval("\$optionscol = \"".$templates->get("misc_usernamehistory_delete")."\";");
+			$colspan = 4;
 		}
 		else
 		{
@@ -602,6 +624,30 @@ function usernameapprovalhistory_run()
 
 		eval("\$usernamehistory = \"".$templates->get("misc_usernamehistory")."\";");
 		output_page($usernamehistory);
+	}
+
+	if($mybb->input['action'] == "usernamehistorydelete")
+	{
+		// Verify incoming POST request
+		verify_post_check($mybb->get_input('my_post_key'));
+
+		if($mybb->usergroup['issupermod'] == 0)
+		{
+			error_no_permission();
+		}
+
+		$query = $db->simple_select("usernamehistory", "*", "hid='".$mybb->get_input('hid', MyBB::INPUT_INT)."'");
+		$history = $db->fetch_array($query);
+
+		if(!$history)
+		{
+			error($lang->error_invalidhistory);
+		}
+
+		$db->delete_query("usernamehistory", "hid='{$history['hid']}'");
+		update_usernameapproval();
+
+		redirect("misc.php?action=usernamehistory&uid={$history['uid']}", $lang->redirect_historydeleted);
 	}
 }
 
