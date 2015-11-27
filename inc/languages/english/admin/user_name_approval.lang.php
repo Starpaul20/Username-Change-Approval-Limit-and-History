@@ -26,6 +26,7 @@ $l['can_approve_username_changes'] = "Can approve username change?";
 $l['admin_log_user_name_approval'] = "Moderated username changes";
 $l['admin_log_user_name_approval_prune'] = "Pruned {3} username change logs older than {1} days";
 $l['admin_log_user_name_approval_prune_user'] = "Pruned {3} username change logs older than {1} days for user #{2}";
+$l['admin_log_user_name_approval_delete'] = "Deleted username history #{1}";
 
 // Username Approval page
 $l['username_approval'] = "Username Change Approval";
@@ -77,5 +78,9 @@ $l['asc'] = "Ascending";
 $l['desc'] = "Descending";
 $l['all_users'] = "All Users";
 $l['results_per_page'] = "Results Per Page:";
+
+$l['error_invalid_username_history'] = "You have selected an invalid username history entry.";
+$l['success_username_history_deleted'] = "The username history entry has been deleted successfully.";
+$l['confirm_username_history_deletion'] = "Are you sure you wish to delete this username history entry?";
 
 ?>

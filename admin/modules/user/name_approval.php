@@ -175,11 +175,12 @@ if($mybb->input['action'] == "logs")
 
 	$table = new Table;
 	$table->construct_header($lang->current_username, array('width' => '20%'));
-	$table->construct_header($lang->old_username, array("class" => "align_center", 'width' => '20%'));
-	$table->construct_header($lang->changed_to, array("class" => "align_center", 'width' => '20%'));
+	$table->construct_header($lang->old_username, array("class" => "align_center", 'width' => '15%'));
+	$table->construct_header($lang->changed_to, array("class" => "align_center", 'width' => '15%'));
 	$table->construct_header($lang->change_date, array("class" => "align_center", 'width' => '15%'));
 	$table->construct_header($lang->ipaddress, array("class" => "align_center", 'width' => '10%'));
 	$table->construct_header($lang->admin_change, array("class" => "align_center", 'width' => '15%'));
+	$table->construct_header($lang->options, array("class" => "align_center", 'width' => '10%'));
 
 	$query = $db->query("
 		SELECT h.*, u.username AS current_username, u.usergroup, u.displaygroup
@@ -217,12 +218,13 @@ if($mybb->input['action'] == "logs")
 		$table->construct_cell($logitem['dateline'], array("class" => "align_center"));
 		$table->construct_cell(my_inet_ntop($db->unescape_binary($logitem['ipaddress'])), array("class" => "align_center"));
 		$table->construct_cell($adminchange, array("class" => "align_center"));
+		$table->construct_cell("<a href=\"index.php?module=user-name_approval&amp;action=delete&amp;hid={$logitem['hid']}&amp;my_post_key={$mybb->post_code}\" onclick=\"return AdminCP.deleteConfirmation(this, '{$lang->confirm_username_history_deletion}')\">{$lang->delete}</a>", array("class" => "align_center"));
 		$table->construct_row();
 	}
 
 	if($table->num_rows() == 0)
 	{
-		$table->construct_cell($lang->no_username_history, array("colspan" => "6"));
+		$table->construct_cell($lang->no_username_history, array("colspan" => "7"));
 		$table->construct_row();
 	}
 
@@ -279,6 +281,40 @@ if($mybb->input['action'] == "logs")
 	$form->end();
 
 	$page->output_footer();
+}
+
+if($mybb->input['action'] == "delete")
+{
+	if($mybb->input['no'])
+	{
+		admin_redirect("index.php?module=user-name_approval&amp;action=logs");
+	}
+
+	$query = $db->simple_select("usernamehistory", "*", "hid='".$mybb->get_input('hid', MyBB::INPUT_INT)."'");
+	$history = $db->fetch_array($query);
+
+	if(!$history['hid'])
+	{
+		flash_message($lang->error_invalid_username_history, 'error');
+		admin_redirect("index.php?module=user-name_approval&amp;action=logs");
+	}
+
+	if($mybb->request_method == "post")
+	{
+		$db->delete_query("usernamehistory", "hid='{$history['hid']}'");
+
+		update_usernameapproval();
+
+		// Log admin action
+		log_admin_action($history['hid']);
+
+		flash_message($lang->success_username_history_deleted, 'success');
+		admin_redirect("index.php?module=user-name_approval&amp;action=logs");
+	}
+	else
+	{
+		$page->output_confirm_action("index.php?module=user-name_approval&amp;action=delete&amp;hid={$history['hid']}", $lang->confirm_username_history_deletion);
+	}
 }
 
 if(!$mybb->input['action'])
