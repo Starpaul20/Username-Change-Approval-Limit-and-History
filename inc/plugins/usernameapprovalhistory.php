@@ -87,7 +87,7 @@ function usernameapprovalhistory_info()
 		"website"			=> "http://galaxiesrealm.com/index.php",
 		"author"			=> "Starpaul20",
 		"authorsite"		=> "http://galaxiesrealm.com/index.php",
-		"version"			=> "1.2",
+		"version"			=> "1.3",
 		"codename"			=> "usernameapprovalhistory",
 		"compatibility"		=> "18*"
 	);
@@ -1011,7 +1011,7 @@ function usernameapprovalhistory_modcp_page()
 
 	if($mybb->input['action'] == "usernameapproval")
 	{
-		add_breadcrumb($lang->mcp_nav_home, "modcp.php");
+		add_breadcrumb($lang->nav_modcp, "modcp.php");
 		add_breadcrumb($lang->mcp_nav_usernameapproval, "modcp.php?action=usernameapproval");
 
 		if($mybb->usergroup['canapproveusernames'] == 0)

@@ -1,3 +1,7 @@
+1.3 (November 30th, 2015)
+- Added Mod CP approval page (Issue #5)
+- Added ability to delete username changes (Issue #6)
+
 1.2 (April 18th, 2015)
 - Added PostgreSQL and SQLite support
 - Using generate_numeric_field function
