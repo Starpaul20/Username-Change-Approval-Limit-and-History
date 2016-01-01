@@ -1,6 +1,6 @@
 ## INFORMATION ##
 
-Username Change Approval, Limit and History (1.3) for MyBB 1.8
+Username Change Approval, Limit and History (1.3.1) for MyBB 1.8
 Created by: Starpaul20
 Copyright: ©2012
 License: GPL
