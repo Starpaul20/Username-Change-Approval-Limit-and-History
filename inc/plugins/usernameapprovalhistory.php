@@ -221,6 +221,13 @@ function usernameapprovalhistory_uninstall()
 function usernameapprovalhistory_activate()
 {
 	global $db;
+
+	// Upgrade support (from 1.2 to 1.3)
+	if(!$db->field_exists("canapproveusernames", "usergroups"))
+	{
+		$db->add_column("usergroups", "canapproveusernames", "tinyint(1) NOT NULL default '1'");
+	}
+
 	$query = $db->simple_select("settinggroups", "gid", "name='member'");
 	$gid = $db->fetch_field($query, "gid");
 
