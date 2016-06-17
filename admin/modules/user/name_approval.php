@@ -74,7 +74,7 @@ if($mybb->input['action'] == 'prune')
 	");
 	while($user = $db->fetch_array($query))
 	{
-		$user_options[$user['uid']] = $user['username'];
+		$user_options[$user['uid']] = htmlspecialchars_uni($user['username']);
 	}
 
 	$form = new Form("index.php?module=user-name_approval&amp;action=prune", "post");
@@ -195,7 +195,7 @@ if($mybb->input['action'] == "logs")
 		$adminchange = '';
 		$logitem['dateline'] = my_date('relative', $logitem['dateline']);
 		$trow = alt_trow();
-		$username = format_name($logitem['current_username'], $logitem['usergroup'], $logitem['displaygroup']);
+		$username = format_name(htmlspecialchars_uni($logitem['current_username']), $logitem['usergroup'], $logitem['displaygroup']);
 		$logitem['profilelink'] = build_profile_link($username, $logitem['uid']);
 
 		$logitem['username'] = htmlspecialchars_uni($logitem['username']);
@@ -204,6 +204,7 @@ if($mybb->input['action'] == "logs")
 		if($logitem['adminchange'] == 1)
 		{
 			$data = unserialize($logitem['admindata']);
+			$data['username'] = htmlspecialchars_uni($data['username']);
 			$logitem['adminlink'] = build_profile_link($data['username'], $data['uid']);
 			$adminchange = "<strong>{$lang->yes}</strong>, {$lang->changed_by} {$logitem['adminlink']}";
 		}
@@ -256,7 +257,7 @@ if($mybb->input['action'] == "logs")
 		{
 			$selected = "selected=\"selected\"";
 		}
-		$user_options[$user['uid']] = $user['username'];
+		$user_options[$user['uid']] = htmlspecialchars_uni($user['username']);
 	}
 
 	$sort_by = array(
@@ -404,7 +405,11 @@ if(!$mybb->input['action'])
 	{
 		$username_history['dateline'] = my_date('relative', $username_history['dateline']);
 		$trow = alt_trow();
+
+		$username_history['username'] = htmlspecialchars_uni($username_history['username']);
 		$username_history['profilelink'] = build_profile_link($username_history['username'], $username_history['uid'], "_blank");
+
+		$username_history['newusername'] = htmlspecialchars_uni($username_history['newusername']);
 
 		$controls = "<div class=\"modqueue_controls\">\n";
 		$controls .= $form->generate_radio_button("users[{$username_history['hid']}]", "ignore", $lang->ignore, array('class' => 'radio_ignore', 'checked' => true))." ";

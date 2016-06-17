@@ -590,6 +590,7 @@ function usernameapprovalhistory_run()
 		{
 			$alt_bg = alt_trow();
 			$dateline = my_date('relative', $history['dateline']);
+			$history['username'] = htmlspecialchars_uni($history['username']);
 
 			// Display IP address and admin notation of username changes if user is a mod/admin
 			$ipaddressbit = $deletebit = '';
@@ -603,6 +604,7 @@ function usernameapprovalhistory_run()
 				if($history['adminchange'] == 1)
 				{
 					$admindata = unserialize($history['admindata']);
+					$admindata['username'] = htmlspecialchars_uni($admindata['username']);
 					$admin_change = $lang->sprintf($lang->admin_change, $admindata['username']);
 					eval("\$star = \"".$templates->get("misc_usernamehistory_history_star")."\";");
 				}
@@ -1081,6 +1083,7 @@ function usernameapprovalhistory_modcp_page()
 		while($usernamehistory = $db->fetch_array($query2))
 		{
 			$alt_bg = alt_trow();
+			$usernamehistory['username'] = htmlspecialchars_uni($usernamehistory['username']);
 			$usernamehistory['username'] = build_profile_link($usernamehistory['username'], $usernamehistory['uid']);
 			$dateline = my_date('relative', $usernamehistory['dateline']);
 			$usernamehistory['ipaddress'] = my_inet_ntop($db->unescape_binary($usernamehistory['ipaddress']));
@@ -1188,7 +1191,7 @@ function usernameapprovalhistory_admin_log()
 	{
 		$admin_info = array(
 			'uid' => (int)$mybb->user['uid'],
-			'username' => $db->escape_string($mybb->user['username'])
+			'username' => $mybb->user['username']
 		);
 		$admindata = serialize($admin_info);
 
