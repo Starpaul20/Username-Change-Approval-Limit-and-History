@@ -424,7 +424,7 @@ function usernameapprovalhistory_activate()
 						<tr>
 							<td class="tcat" align="center" width="25%"><span class="smalltext"><strong>{$lang->current_name}</strong></span></td>
 							<td class="tcat" align="center" width="25%"><span class="smalltext"><strong>{$lang->new_username}</strong></span></td>
-							<td class="tcat" align="center" width="25%"><span class="smalltext"><strong>{$lang->dateline}</strong></span></td>
+							<td class="tcat" align="center" width="25%"><span class="smalltext"><strong>{$lang->date}</strong></span></td>
 							<td class="tcat" align="center" width="15%"><span class="smalltext"><strong>{$lang->ipaddress}</strong></span></td>
 							<td class="tcat" align="center" width="1"><input name="allbox" title="Select All" type="checkbox" class="checkbox checkall" value="1" /></td>
 						</tr>
