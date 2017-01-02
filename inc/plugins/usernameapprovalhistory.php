@@ -236,7 +236,8 @@ function usernameapprovalhistory_activate()
 		'name' => 'minusernametimewait',
 		'title' => 'Minimum Time Between Username Changes',
 		'description' => 'The minimum amount of time (in hours) after a username change a user must wait before being able to change it again. Admin changes do not count towards this limit. Enter 0 (zero) for no limit.',
-		'optionscode' => 'numeric',
+		'optionscode' => 'numeric
+min=0',
 		'value' => 6,
 		'disporder' => 37,
 		'gid' => (int)$gid
