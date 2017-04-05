@@ -11,7 +11,7 @@ if(!defined("IN_MYBB"))
 }
 
 // Neat trick for caching our custom template(s)
-if(my_strpos($_SERVER['PHP_SELF'], 'misc.php'))
+if(THIS_SCRIPT == 'misc.php')
 {
 	global $templatelist;
 	if(isset($templatelist))
@@ -21,7 +21,7 @@ if(my_strpos($_SERVER['PHP_SELF'], 'misc.php'))
 	$templatelist .= 'misc_usernamehistory_history,misc_usernamehistory_history_ipaddress,misc_usernamehistory_history_delete,misc_usernamehistory_history_star,misc_usernamehistory,misc_usernamehistory_ipaddress,misc_usernamehistory_delete,misc_usernamehistory_no_history';
 }
 
-if(my_strpos($_SERVER['PHP_SELF'], 'member.php'))
+if(THIS_SCRIPT == 'member.php')
 {
 	global $templatelist;
 	if(isset($templatelist))
@@ -31,7 +31,7 @@ if(my_strpos($_SERVER['PHP_SELF'], 'member.php'))
 	$templatelist .= 'member_profile_usernamechanges';
 }
 
-if(my_strpos($_SERVER['PHP_SELF'], 'modcp.php'))
+if(THIS_SCRIPT == 'modcp.php')
 {
 	global $templatelist;
 	if(isset($templatelist))
@@ -41,7 +41,7 @@ if(my_strpos($_SERVER['PHP_SELF'], 'modcp.php'))
 	$templatelist .= 'modcp_nav_usernameapproval,modcp_usernameapproval,modcp_usernameapproval_actions,modcp_usernameapproval_none,modcp_usernameapproval_row';
 }
 
-if(my_strpos($_SERVER['PHP_SELF'], 'usercp.php'))
+if(THIS_SCRIPT == 'usercp.php')
 {
 	global $templatelist;
 	if(isset($templatelist))
