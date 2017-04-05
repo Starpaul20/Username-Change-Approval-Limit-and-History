@@ -50,5 +50,3 @@ $l['redirect_changes_deleted'] = "The username changes have been deleted success
 $l['delete_history_confirm'] = "Are you sure you wish to delete this username history entry?";
 $l['error_invalidhistory'] = "You have selected an invalid username history entry.";
 $l['redirect_historydeleted'] = "The username history entry has been deleted successfully.";
-
-?>

@@ -1321,5 +1321,3 @@ function update_usernameapproval()
 
 	$cache->update("usernameapproval", $usernamehistory);
 }
-
-?>
