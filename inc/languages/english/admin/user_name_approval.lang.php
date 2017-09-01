@@ -82,3 +82,5 @@ $l['results_per_page'] = "Results Per Page:";
 $l['error_invalid_username_history'] = "You have selected an invalid username history entry.";
 $l['success_username_history_deleted'] = "The username history entry has been deleted successfully.";
 $l['confirm_username_history_deletion'] = "Are you sure you wish to delete this username history entry?";
+
+$l['na_deleted'] = "N/A - Been Deleted";

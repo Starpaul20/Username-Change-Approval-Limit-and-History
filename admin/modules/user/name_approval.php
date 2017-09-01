@@ -74,6 +74,12 @@ if($mybb->input['action'] == 'prune')
 	");
 	while($user = $db->fetch_array($query))
 	{
+		// Deleted Users
+		if(!$user['username'])
+		{
+			$user['username'] = htmlspecialchars_uni($lang->na_deleted);
+		}
+
 		$user_options[$user['uid']] = htmlspecialchars_uni($user['username']);
 	}
 
@@ -195,8 +201,16 @@ if($mybb->input['action'] == "logs")
 		$adminchange = '';
 		$logitem['dateline'] = my_date('relative', $logitem['dateline']);
 		$trow = alt_trow();
-		$username = format_name(htmlspecialchars_uni($logitem['current_username']), $logitem['usergroup'], $logitem['displaygroup']);
-		$logitem['profilelink'] = build_profile_link($username, $logitem['uid']);
+
+		if($logitem['current_username'])
+		{
+			$username = format_name(htmlspecialchars_uni($logitem['current_username']), $logitem['usergroup'], $logitem['displaygroup']);
+			$logitem['profilelink'] = build_profile_link($username, $logitem['uid']);
+		}
+		else
+		{
+			$username = $logitem['profilelink'] = $logitem['current_username'] = htmlspecialchars_uni($lang->na_deleted);
+		}
 
 		$logitem['username'] = htmlspecialchars_uni($logitem['username']);
 		$logitem['newusername'] = htmlspecialchars_uni($logitem['newusername']);
@@ -252,6 +266,12 @@ if($mybb->input['action'] == "logs")
 	");
 	while($user = $db->fetch_array($query))
 	{
+		// Deleted Users
+		if(!$user['username'])
+		{
+			$user['username'] = htmlspecialchars_uni($lang->na_deleted);
+		}
+
 		$selected = '';
 		if($mybb->input['uid'] == $user['uid'])
 		{
