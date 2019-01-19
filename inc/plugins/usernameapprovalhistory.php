@@ -239,7 +239,7 @@ function usernameapprovalhistory_activate()
 		'optionscode' => 'numeric
 min=0',
 		'value' => 6,
-		'disporder' => 37,
+		'disporder' => 26,
 		'gid' => (int)$gid
 	);
 	$db->insert_query("settings", $insertarray);
