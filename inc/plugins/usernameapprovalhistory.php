@@ -870,7 +870,8 @@ function usernameapprovalhistory_check()
 
 	if($mybb->usergroup['usernameapproval'] == 1)
 	{
-		$errors = '';
+		$errors = array();
+
 		require_once MYBB_ROOT."inc/functions_user.php";
 
 		if($mybb->usergroup['canchangename'] != 1)
