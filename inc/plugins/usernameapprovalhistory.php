@@ -489,7 +489,7 @@ min=0',
 	);
 	$db->insert_query("templates", $insert_array);
 
-	include MYBB_ROOT."/inc/adminfunctions_templates.php";
+	require_once MYBB_ROOT."/inc/adminfunctions_templates.php";
 	find_replace_templatesets("member_profile", "#".preg_quote('{$online_status}')."#i", '{$online_status}{$username_changes}');
 	find_replace_templatesets("usercp_changename", "#".preg_quote('{$lang->new_username}</strong>')."#i", '{$lang->new_username}</strong>{$maxchanges}{$approvalnotice}{$changesleft}');
 	find_replace_templatesets("header", "#".preg_quote('{$pm_notice}')."#i", '{$pm_notice}{$username_approval}');
@@ -509,7 +509,7 @@ function usernameapprovalhistory_deactivate()
 	$db->delete_query("templates", "title IN('modcp_nav_usernameapproval','modcp_usernameapproval','modcp_usernameapproval_actions','modcp_usernameapproval_none','modcp_usernameapproval_row')");
 	rebuild_settings();
 
-	include MYBB_ROOT."/inc/adminfunctions_templates.php";
+	require_once MYBB_ROOT."/inc/adminfunctions_templates.php";
 	find_replace_templatesets("member_profile", "#".preg_quote('{$username_changes}')."#i", '', 0);
 	find_replace_templatesets("usercp_changename", "#".preg_quote('{$maxchanges}{$approvalnotice}{$changesleft}')."#i", '', 0);
 	find_replace_templatesets("header", "#".preg_quote('{$username_approval}')."#i", '', 0);
