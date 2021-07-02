@@ -217,7 +217,7 @@ if($mybb->input['action'] == "logs")
 
 		if($logitem['adminchange'] == 1)
 		{
-			$data = unserialize($logitem['admindata']);
+			$data = my_unserialize($logitem['admindata']);
 			$data['username'] = htmlspecialchars_uni($data['username']);
 			$logitem['adminlink'] = build_profile_link($data['username'], $data['uid']);
 			$adminchange = "<strong>{$lang->yes}</strong>, {$lang->changed_by} {$logitem['adminlink']}";

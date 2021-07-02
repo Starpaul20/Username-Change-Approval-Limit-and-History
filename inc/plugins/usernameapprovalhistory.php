@@ -607,7 +607,7 @@ function usernameapprovalhistory_run()
 				$star = '';
 				if($history['adminchange'] == 1)
 				{
-					$admindata = unserialize($history['admindata']);
+					$admindata = my_unserialize($history['admindata']);
 					$admindata['username'] = htmlspecialchars_uni($admindata['username']);
 					$admin_change = $lang->sprintf($lang->admin_change, $admindata['username']);
 					eval("\$star = \"".$templates->get("misc_usernamehistory_history_star")."\";");
@@ -1204,7 +1204,7 @@ function usernameapprovalhistory_admin_log()
 			'uid' => (int)$mybb->user['uid'],
 			'username' => $mybb->user['username']
 		);
-		$admindata = serialize($admin_info);
+		$admindata = my_serialize($admin_info);
 
 		$username_update = array(
 			"uid" => (int)$user['uid'],
