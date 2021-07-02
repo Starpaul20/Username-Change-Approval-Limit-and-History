@@ -911,7 +911,9 @@ function usernameapprovalhistory_check()
 					"dateline" => TIME_NOW,
 					"ipaddress" => $db->escape_binary($session->packedip),
 					"approval" => 1,
-					"newusername" => $db->escape_string($mybb->get_input('username'))
+					"newusername" => $db->escape_string($mybb->get_input('username')),
+					"adminchange" => 0,
+					"admindata" => ''
 				);
 				$db->insert_query("usernamehistory", $username_update);
 				update_usernameapproval();
@@ -938,7 +940,9 @@ function usernameapprovalhistory_log()
 		"username" => $db->escape_string($mybb->user['username']),
 		"dateline" => TIME_NOW,
 		"ipaddress" => $db->escape_binary($session->packedip),
-		"newusername" => $db->escape_string($mybb->get_input('username'))
+		"newusername" => $db->escape_string($mybb->get_input('username')),
+		"adminchange" => 0,
+		"admindata" => ''
 	);
 	$db->insert_query("usernamehistory", $username_update);
 }
@@ -961,6 +965,7 @@ function usernameapprovalhistory_modcp_page()
 	global $db, $mybb, $lang, $templates, $theme, $cache, $headerinclude, $header, $footer, $modcp_nav, $multipage, $usernameapproval_delete_actions;
 	$lang->load("usernameapprovalhistory");
 
+	$mybb->input['action'] = $mybb->get_input('action');
 	if($mybb->input['action'] == "do_usernameapproval")
 	{
 		// Verify incoming POST request
@@ -1049,7 +1054,7 @@ function usernameapprovalhistory_modcp_page()
 		$result = $db->fetch_field($query, "count");
 
 		// Figure out if we need to display multiple pages.
-		if($mybb->input['page'] != "last")
+		if($mybb->get_input('page') != "last")
 		{
 			$page = $mybb->get_input('page', MyBB::INPUT_INT);
 		}
@@ -1057,7 +1062,7 @@ function usernameapprovalhistory_modcp_page()
 		$pages = $result / $perpage;
 		$pages = ceil($pages);
 
-		if($mybb->input['page'] == "last")
+		if($mybb->get_input('page') == "last")
 		{
 			$page = $pages;
 		}
@@ -1078,6 +1083,7 @@ function usernameapprovalhistory_modcp_page()
 
 		$multipage = multipage($result, $perpage, $page, "modcp.php?action=usernameapproval");
 
+		$usernameapproval = '';
 		$query2 = $db->query("
 			SELECT *
 			FROM ".TABLE_PREFIX."usernamehistory h
@@ -1230,16 +1236,19 @@ function usernameapprovalhistory_usergroup_permission($above)
 	global $mybb, $lang, $form;
 	$lang->load("user_name_approval");
 
-	if($above['title'] == $lang->account_management && $lang->account_management)
+	if($mybb->input['module'] == "user-groups" AND $mybb->input['action'] == 'edit')
 	{
-		$above['content'] .="<div class=\"group_settings_bit\">".$form->generate_check_box('usernameapproval', 1, $lang->approve_username_changes, array("checked" => $mybb->input['usernameapproval']))."</div>";
-		$above['content'] .= "<div class=\"group_settings_bit\">{$lang->max_username_changes}:<br /><small>{$lang->max_username_changes_desc}</small><br />".$form->generate_numeric_field('maxusernamesperiod', $mybb->input['maxusernamesperiod'], array('id' => 'maxusernamesperiod', 'class' => 'field50', 'min' => 0))."</div>";
-		$above['content'] .= "<div class=\"group_settings_bit\">{$lang->username_changes_day_limit}:<br /><small>{$lang->username_changes_day_limit_desc}</small><br />".$form->generate_numeric_field('maxusernamesdaylimit', $mybb->input['maxusernamesdaylimit'], array('id' => 'maxusernamesdaylimit', 'class' => 'field50', 'min' => 0))."</div>";
-	}
+		if($above['title'] == $lang->account_management && $lang->account_management)
+		{
+			$above['content'] .= "<div class=\"group_settings_bit\">".$form->generate_check_box('usernameapproval', 1, $lang->approve_username_changes, array("checked" => $mybb->input['usernameapproval']))."</div>";
+			$above['content'] .= "<div class=\"group_settings_bit\">{$lang->max_username_changes}:<br /><small>{$lang->max_username_changes_desc}</small><br />".$form->generate_numeric_field('maxusernamesperiod', $mybb->input['maxusernamesperiod'], array('id' => 'maxusernamesperiod', 'class' => 'field50', 'min' => 0))."</div>";
+			$above['content'] .= "<div class=\"group_settings_bit\">{$lang->username_changes_day_limit}:<br /><small>{$lang->username_changes_day_limit_desc}</small><br />".$form->generate_numeric_field('maxusernamesdaylimit', $mybb->input['maxusernamesdaylimit'], array('id' => 'maxusernamesdaylimit', 'class' => 'field50', 'min' => 0))."</div>";
+		}
 
-	if($above['title'] == $lang->user_options && $lang->user_options)
-	{
-		$above['content'] .= "<div class=\"group_settings_bit\">".$form->generate_check_box("canapproveusernames", 1, $lang->can_approve_username_changes, array("checked" => $mybb->input['canapproveusernames']))."</div>";
+		if($above['title'] == $lang->user_options && $lang->user_options)
+		{
+			$above['content'] .= "<div class=\"group_settings_bit\">".$form->generate_check_box("canapproveusernames", 1, $lang->can_approve_username_changes, array("checked" => $mybb->input['canapproveusernames']))."</div>";
+		}
 	}
 
 	return $above;
@@ -1313,14 +1322,14 @@ function update_usernameapproval()
 	global $db, $cache;
 	$usernamehistory = array();
 	$query = $db->simple_select("usernamehistory", "COUNT(hid) AS approvalcount", "approval='1'");
-	$num = $db->fetch_array($query);
+	$approvalcount = $db->fetch_field($query, 'approvalcount');
 
 	$query = $db->simple_select("usernamehistory", "dateline", "approval='1'", array('order_by' => 'dateline', 'order_dir' => 'DESC'));
-	$latest = $db->fetch_array($query);
+	$dateline = $db->fetch_field($query, 'dateline');
 
 	$usernamehistory = array(
-		"awaiting" => $num['approvalcount'],
-		"lastdateline" => $latest['dateline']
+		"awaiting" => $approvalcount,
+		"lastdateline" => $dateline
 	);
 
 	$cache->update("usernameapproval", $usernamehistory);

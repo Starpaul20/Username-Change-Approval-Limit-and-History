@@ -60,8 +60,8 @@ if($mybb->input['action'] == 'prune')
 	$page->output_nav_tabs($sub_tabs, 'prune_username_logs');
 
 	// Fetch filter options
-	$sortbysel[$mybb->input['sortby']] = 'selected="selected"';
-	$ordersel[$mybb->input['order']] = 'selected="selected"';
+	$sortbysel[$mybb->get_input('sortby')] = 'selected="selected"';
+	$ordersel[$mybb->get_input('order')] = 'selected="selected"';
 
 	$user_options[''] = $lang->all_users;
 	$user_options['0'] = '----------';
@@ -85,13 +85,13 @@ if($mybb->input['action'] == 'prune')
 
 	$form = new Form("index.php?module=user-name_approval&amp;action=prune", "post");
 	$form_container = new FormContainer($lang->prune_username_logs);
-	$form_container->output_row($lang->username, "", $form->generate_select_box('uid', $user_options, $mybb->input['uid'], array('id' => 'uid')), 'uid');
+	$form_container->output_row($lang->username, "", $form->generate_select_box('uid', $user_options, $mybb->get_input('uid'), array('id' => 'uid')), 'uid');
 
-	if(!$mybb->input['older_than'])
+	if(!$mybb->get_input('older_than'))
 	{
 		$mybb->input['older_than'] = '60';
 	}
-	$form_container->output_row($lang->date_range, "", $lang->older_than.$form->generate_numeric_field('older_than', $mybb->input['older_than'], array('id' => 'older_than', 'style' => 'width: 50px', 'min' => 0)).' '.$lang->days, 'older_than');
+	$form_container->output_row($lang->date_range, "", $lang->older_than.$form->generate_numeric_field('older_than', $mybb->get_input('older_than'), array('id' => 'older_than', 'style' => 'width: 50px', 'min' => 0)).' '.$lang->days, 'older_than');
 	$form_container->end();
 	$buttons[] = $form->generate_submit_button($lang->prune_username_logs);
 	$form->output_submit_wrapper($buttons);
@@ -121,13 +121,13 @@ if($mybb->input['action'] == "logs")
 	$where = 'WHERE 1=1';
 
 	// Searching for entries by a particular user
-	if($mybb->input['uid'])
+	if($mybb->get_input('uid') > 0)
 	{
 		$where .= " AND h.uid='".$mybb->get_input('uid', MyBB::INPUT_INT)."'";
 	}
 
 	// Order?
-	switch($mybb->input['sortby'])
+	switch($mybb->get_input('sortby'))
 	{
 		case "username":
 			$sortby = "u.username";
@@ -135,7 +135,7 @@ if($mybb->input['action'] == "logs")
 		default:
 			$sortby = "h.dateline";
 	}
-	$order = $mybb->input['order'];
+	$order = $mybb->get_input('order');
 	if($order != "asc")
 	{
 		$order = "desc";
@@ -150,7 +150,7 @@ if($mybb->input['action'] == "logs")
 	$rescount = $db->fetch_field($query, "count");
 
 	// Figure out if we need to display multiple pages.
-	if($mybb->input['page'] != "last")
+	if($mybb->get_input('page') != "last")
 	{
 		$pagecnt = $mybb->get_input('page', MyBB::INPUT_INT);
 	}
@@ -159,7 +159,7 @@ if($mybb->input['action'] == "logs")
 	$pages = $postcount / $perpage;
 	$pages = ceil($pages);
 
-	if($mybb->input['page'] == "last")
+	if($mybb->get_input('page') == "last")
 	{
 		$pagecnt = $pages;
 	}
@@ -252,8 +252,8 @@ if($mybb->input['action'] == "logs")
 	}
 
 	// Fetch filter options
-	$sortbysel[$mybb->input['sortby']] = "selected=\"selected\"";
-	$ordersel[$mybb->input['order']] = "selected=\"selected\"";
+	$sortbysel[$mybb->get_input('sortby')] = 'selected="selected"';
+	$ordersel[$mybb->get_input('order')] = 'selected="selected"';
 
 	$user_options[''] = $lang->all_users;
 	$user_options['0'] = '----------';
@@ -273,7 +273,7 @@ if($mybb->input['action'] == "logs")
 		}
 
 		$selected = '';
-		if($mybb->input['uid'] == $user['uid'])
+		if($mybb->get_input('uid') == $user['uid'])
 		{
 			$selected = "selected=\"selected\"";
 		}
@@ -292,8 +292,8 @@ if($mybb->input['action'] == "logs")
 
 	$form = new Form("index.php?module=user-name_approval&amp;action=logs", "post");
 	$form_container = new FormContainer($lang->filter_username_history);
-	$form_container->output_row($lang->current_username.":", "", $form->generate_select_box('uid', $user_options, $mybb->input['uid'], array('id' => 'uid')), 'uid');
-	$form_container->output_row($lang->sort_by, "", $form->generate_select_box('sortby', $sort_by, $mybb->input['sortby'], array('id' => 'sortby'))." {$lang->in} ".$form->generate_select_box('order', $order_array, $order, array('id' => 'order'))." {$lang->order}", 'order');
+	$form_container->output_row($lang->current_username.":", "", $form->generate_select_box('uid', $user_options, $mybb->get_input('uid'), array('id' => 'uid')), 'uid');
+	$form_container->output_row($lang->sort_by, "", $form->generate_select_box('sortby', $sort_by, $mybb->get_input('sortby'), array('id' => 'sortby'))." {$lang->in} ".$form->generate_select_box('order', $order_array, $order, array('id' => 'order'))." {$lang->order}", 'order');
 	$form_container->output_row($lang->results_per_page, "", $form->generate_numeric_field('perpage', $perpage, array('id' => 'perpage', 'min' => 1)), 'perpage');
 
 	$form_container->end();
@@ -342,16 +342,17 @@ if(!$mybb->input['action'])
 {
 	if($mybb->request_method == "post")
 	{
-		if(is_array($mybb->input['users']))
+		$users = $mybb->get_input('users', MyBB::INPUT_ARRAY);
+		if(!empty($users) && is_array($users))
 		{
 			require_once MYBB_ROOT."inc/datahandlers/user.php";
 			$userhandler = new UserDataHandler("update");
 
 			// Fetch users
-			$query = $db->simple_select("usernamehistory", "hid, uid, newusername", "hid IN (".implode(",", array_map("intval", array_keys($mybb->input['users']))).")");
+			$query = $db->simple_select("usernamehistory", "hid, uid, newusername", "hid IN (".implode(",", array_map("intval", array_keys($users))).")");
 			while($history = $db->fetch_array($query))
 			{
-				$action = $mybb->input['users'][$history['hid']];
+				$action = $users[$history['hid']];
 				if($action == "approve")
 				{
 					$user = array(
