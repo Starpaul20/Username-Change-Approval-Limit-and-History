@@ -1,3 +1,10 @@
+1.5 (July 2nd, 2021)
+- Bug: Fixed Uncaught Error: [] operator not supported for strings (Issue #8)
+- Added check to see if THIS_SCRIPT is defined
+- Fixed PHP 8.0 errors
+- Use my_serialize
+- Use require_once for template updates
+
 1.4 (January 19th, 2019)
 - Optimized PNG image
 - Sanitized usernames
