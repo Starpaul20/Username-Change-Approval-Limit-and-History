@@ -11,44 +11,47 @@ if(!defined("IN_MYBB"))
 }
 
 // Neat trick for caching our custom template(s)
-if(THIS_SCRIPT == 'misc.php')
+if(defined('THIS_SCRIPT'))
 {
-	global $templatelist;
-	if(isset($templatelist))
+	if(THIS_SCRIPT == 'misc.php')
 	{
-		$templatelist .= ',';
+		global $templatelist;
+		if(isset($templatelist))
+		{
+			$templatelist .= ',';
+		}
+		$templatelist .= 'misc_usernamehistory_history,misc_usernamehistory_history_ipaddress,misc_usernamehistory_history_delete,misc_usernamehistory_history_star,misc_usernamehistory,misc_usernamehistory_ipaddress,misc_usernamehistory_delete,misc_usernamehistory_no_history';
 	}
-	$templatelist .= 'misc_usernamehistory_history,misc_usernamehistory_history_ipaddress,misc_usernamehistory_history_delete,misc_usernamehistory_history_star,misc_usernamehistory,misc_usernamehistory_ipaddress,misc_usernamehistory_delete,misc_usernamehistory_no_history';
-}
 
-if(THIS_SCRIPT == 'member.php')
-{
-	global $templatelist;
-	if(isset($templatelist))
+	if(THIS_SCRIPT == 'member.php')
 	{
-		$templatelist .= ',';
+		global $templatelist;
+		if(isset($templatelist))
+		{
+			$templatelist .= ',';
+		}
+		$templatelist .= 'member_profile_usernamechanges';
 	}
-	$templatelist .= 'member_profile_usernamechanges';
-}
 
-if(THIS_SCRIPT == 'modcp.php')
-{
-	global $templatelist;
-	if(isset($templatelist))
+	if(THIS_SCRIPT == 'modcp.php')
 	{
-		$templatelist .= ',';
+		global $templatelist;
+		if(isset($templatelist))
+		{
+			$templatelist .= ',';
+		}
+		$templatelist .= 'modcp_nav_usernameapproval,modcp_usernameapproval,modcp_usernameapproval_actions,modcp_usernameapproval_none,modcp_usernameapproval_row';
 	}
-	$templatelist .= 'modcp_nav_usernameapproval,modcp_usernameapproval,modcp_usernameapproval_actions,modcp_usernameapproval_none,modcp_usernameapproval_row';
-}
 
-if(THIS_SCRIPT == 'usercp.php')
-{
-	global $templatelist;
-	if(isset($templatelist))
+	if(THIS_SCRIPT == 'usercp.php')
 	{
-		$templatelist .= ',';
+		global $templatelist;
+		if(isset($templatelist))
+		{
+			$templatelist .= ',';
+		}
+		$templatelist .= 'usercp_changename_approvalnotice,usercp_changename_maxchanges,usercp_changename_changesleft';
 	}
-	$templatelist .= 'usercp_changename_approvalnotice,usercp_changename_maxchanges,usercp_changename_changesleft';
 }
 
 // Tell MyBB when to run the hooks
