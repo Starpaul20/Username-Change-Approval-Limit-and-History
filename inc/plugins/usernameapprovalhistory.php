@@ -559,7 +559,7 @@ function usernameapprovalhistory_run()
 		$query = $db->simple_select("usernamehistory", "COUNT(hid) AS count", "uid='{$user['uid']}' AND approval='0'");
 		$result = $db->fetch_field($query, "count");
 
-		if($mybb->input['page'] != "last")
+		if($mybb->get_input('page') != "last")
 		{
 			$page = $mybb->get_input('page', MyBB::INPUT_INT);
 		}
@@ -567,7 +567,7 @@ function usernameapprovalhistory_run()
 		$pages = $result / $perpage;
 		$pages = ceil($pages);
 
-		if($mybb->input['page'] == "last")
+		if($mybb->get_input('page') == "last")
 		{
 			$page = $pages;
 		}
@@ -589,6 +589,7 @@ function usernameapprovalhistory_run()
 		$multipage = multipage($result, $perpage, $page, "misc.php?action=usernamehistory&uid={$user['uid']}");
 
 		// Fetch the usernames which will be displayed on this page
+		$usernamehistory_bit = '';
 		$query = $db->simple_select("usernamehistory", "*", "uid='{$user['uid']}' AND approval='0'", array("order_by" => "dateline", "order_dir" => "desc", "limit_start" => $start, "limit" => $perpage));
 		while($history = $db->fetch_array($query))
 		{
@@ -597,14 +598,13 @@ function usernameapprovalhistory_run()
 			$history['username'] = htmlspecialchars_uni($history['username']);
 
 			// Display IP address and admin notation of username changes if user is a mod/admin
-			$ipaddressbit = $deletebit = '';
+			$ipaddressbit = $deletebit = $star = '';
 			if($mybb->usergroup['cancp'] == 1 || $mybb->usergroup['issupermod'] == 1)
 			{
 				$history['ipaddress'] = my_inet_ntop($db->unescape_binary($history['ipaddress']));
 				eval("\$ipaddressbit = \"".$templates->get("misc_usernamehistory_history_ipaddress")."\";");
 				eval("\$deletebit = \"".$templates->get("misc_usernamehistory_history_delete")."\";");
 
-				$star = '';
 				if($history['adminchange'] == 1)
 				{
 					$admindata = my_unserialize($history['admindata']);
@@ -1123,7 +1123,7 @@ function usernameapprovalhistory_modcp_page()
 function usernameapprovalhistory_online_activity($user_activity)
 {
 	global $user, $uid_list, $parameters;
-	if(my_strpos($user['location'], "misc.php?action=usernamehistory") !== false)
+	if(my_strpos($user_activity['location'], "misc.php?action=usernamehistory") !== false)
 	{
 		if(is_numeric($parameters['uid']))
 		{
